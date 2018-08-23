@@ -1,40 +1,59 @@
 import React from 'react';
 import BridgeManager from "../lib/BridgeManager.js";
 import "standard-file-js/dist/regenerator.js";
-import { StandardFile, SFAbstractCrypto, SFItemTransformer } from 'standard-file-js';
+import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFItemParams } from 'standard-file-js';
 import Item from "../lib/item";
 import { Base64 } from 'js-base64';
+import RelayManager from '../lib/RelayManager';
 
-export default class BackupExplorer extends React.Component {
+export default class FilesView extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {};
 
-    SFJS.crypto.generateInitialKeysAndAuthParamsForUser("me@bitar.io", "password").then((results) => {
-      console.log("Computed initial values:", results);
-      let keys = results.keys;
-      let auth_params = results.auth_params;
-
-      this.keys = keys;
-      this.auth_params = auth_params;
-
-      var item = new Item({
-        content_type: "SN|FileVault|File",
-        content: {
-          rawData: "Hello, world."
-        }
+    BridgeManager.get().initiateBridge(() => {
+      BridgeManager.get().loadOrCreateCredentials().then((credentials) => {
+        console.log("Loaded credentials", credentials);
+        this.authParams = credentials.authParams;
+        this.keys = credentials.keys;
       });
 
-      SFJS.itemTransformer.encryptItem(item, this.keys).then((encryptedItem) => {
-        console.log("Encrypted item", encryptedItem);
-        encryptedItem.uuid = item.uuid;
-        SFJS.itemTransformer.decryptItem(encryptedItem, this.keys).then(() => {
-          console.log("Decrypted item", encryptedItem);
-          console.assert(!encryptedItem.errorDecrypting);
-        });
-      });
+      BridgeManager.get().beginStreamingItem();
     });
+
+    BridgeManager.get().addUpdateObserver(() => {
+      this.reload();
+    })
+
+    // SFJS.crypto.generateInitialKeysAndAuthParamsForUser("me@bitar.io", "password").then((results) => {
+    //   console.log("Computed initial values:", results);
+    //   let keys = results.keys;
+    //   let authParams = results.authParams;
+    //
+    //   this.keys = keys;
+    //   this.authParams = authParams;
+    //
+    //   var item = new Item({
+    //     content_type: "SN|FileVault|File",
+    //     content: {
+    //       rawData: "Hello, world."
+    //     }
+    //   });
+    //
+    //   SFJS.itemTransformer.encryptItem(item, this.keys, authParams).then((encryptedItem) => {
+    //     console.log("Encrypted item", encryptedItem);
+    //     encryptedItem.uuid = item.uuid;
+    //     SFJS.itemTransformer.decryptItem(encryptedItem, this.keys).then(() => {
+    //       console.log("Decrypted item", encryptedItem);
+    //       console.assert(!encryptedItem.errorDecrypting);
+    //     });
+    //   });
+    // });
+  }
+
+  reload() {
+
   }
 
   componentDidMount() {
@@ -108,7 +127,6 @@ export default class BackupExplorer extends React.Component {
     dropContainer.ondragleave = dropContainer.ondragend = this.dropContainerOnEnter;
   }
 
-
   reset() {
     this.setState({rawData: null, decryptedItems: null, requestPassword: false});
   }
@@ -138,33 +156,45 @@ export default class BackupExplorer extends React.Component {
     }
   }
 
-  encryptFile(data, fileName, fileType) {
+  async encryptFile(data, inputFileName, fileType) {
     var writeData = data;
     var item = new Item({
-      content_type: "SN|FileVault|File",
+      content_type: "SN|FileSafe|File",
       content: {
         rawData: writeData,
-        fileName: fileName,
+        fileName: inputFileName,
         fileType: fileType
       }
     });
 
-    SFJS.itemTransformer.encryptItem(item, this.keys).then((encryptedItem) => {
-      encryptedItem.uuid = item.uuid;
-      this.downloadData(JSON.stringify(encryptedItem, null, 2 /* pretty print */), `${fileName}.sf.json`);
-    })
+    var integration = BridgeManager.get().getIntegrations()[0];
+
+    var itemParamsObject = new SFItemParams(item, this.keys, this.authParams);
+    var itemParams = await itemParamsObject.paramsForSync();
+
+    var outputFileName = `${inputFileName}.sf.json`;
+    RelayManager.get().uploadFile(outputFileName, itemParams, integration, (response) => {
+
+    });
+
+    // encryptedItem.uuid = item.uuid;
+    // this.downloadData(JSON.stringify(encryptedItem, null, 2 /* pretty print */), `${fileName}.sf.json`);
   }
 
   decryptFile(data) {
     let parsedData = JSON.parse(data);
+    var item = parsedData.items[0];
 
-    SFJS.itemTransformer.decryptItem(parsedData, this.keys).then(() => {
-      var decryptedItem = new Item(parsedData);
-      // console.log("Decrypted item result:", decryptedItem);
+    console.log("Decrypting item", item);
 
-      var urlData = decryptedItem.rawData;
-      // console.log("Decrypted raw data", urlData);
-      this.downloadData(this.dataURItoBinary(urlData), decryptedItem.fileName, decryptedItem.fileType);
+    SFJS.itemTransformer.decryptItem(item, this.keys).then(() => {
+      var decryptedItem = new Item(item);
+      decryptedItem.content = JSON.parse(decryptedItem.content);
+      console.log("Decrypted item result:", decryptedItem);
+
+      var urlData = decryptedItem.content.rawData;
+      console.log("Decrypted raw data", urlData);
+      this.downloadData(this.dataURItoBinary(urlData), decryptedItem.content.fileName, decryptedItem.content.fileType);
     })
   }
 

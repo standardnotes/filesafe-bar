@@ -1,5 +1,5 @@
 {
-  "name": "sn-batch-manager",
+  "name": "sn-filesafe",
   "version": "1.0.0",
   "main": "dist/dist.js",
   "scripts": {
@@ -37,7 +37,7 @@
     "eslint-plugin-react": "latest",
     "extract-text-webpack-plugin": "^3.0.2",
     "husky": "^0.12.0",
-    "node-sass": "^4.6.0",
+    "node-sass": "^4.9.3",
     "open-browser-webpack-plugin": "0.0.3",
     "react": "16.x",
     "react-dom": "16.x",
@@ -48,9 +48,10 @@
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.7",
     "sn-stylekit": "1.0.12",
-    "standard-file-js": "/Users/mo/Desktop/sf/sfjs"
+    "standard-file-js": "0.3.13"
   },
   "dependencies": {
-    "js-base64": "^2.4.5"
+    "js-base64": "^2.4.5",
+    "lodash": "^4.17.10"
   }
 }

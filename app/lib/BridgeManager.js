@@ -1,4 +1,9 @@
 import ComponentManager from 'sn-components-api';
+import "standard-file-js/dist/regenerator.js";
+import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager } from 'standard-file-js';
+
+const ComponentKeyCredentialsKey = "ComponentKeyCredentialsKey";
+const ComponentKeyIntegrationsArrayKey = "ComponentKeyIntegrationsArrayKey";
 
 export default class BridgeManager {
 
@@ -35,6 +40,28 @@ export default class BridgeManager {
     this.componentManager.setSize("content", "90%", "90%");
   }
 
+  setComponentData(key, value) {
+    this.componentManager.setComponentDataValueForKey(key, value);
+  }
+
+  getComponentData(key) {
+    return this.componentManager.componentDataValueForKey(key);
+  }
+
+  async loadOrCreateCredentials() {
+    let credentials = this.getComponentData(ComponentKeyCredentialsKey);
+    if(!credentials) {
+      let bits = 256;
+      let identifer = await SFJS.crypto.generateRandomKey(bits);
+      let password = await SFJS.crypto.generateRandomKey(bits);
+      let credentials = await SFJS.crypto.generateInitialKeysAndAuthParamsForUser(identifer, password);
+      this.setComponentData(ComponentKeyCredentialsKey, credentials);
+      return credentials;
+    } else {
+      return credentials;
+    }
+  }
+
   getItemAppDataValue(item, key) {
     return this.componentManager.getItemAppDataValue(item, key);
   }
@@ -45,6 +72,24 @@ export default class BridgeManager {
 
   didBeginStreaming() {
     return this._didBeginStreaming;
+  }
+
+  getIntegrations() {
+    var integrationStrings = this.getComponentData(ComponentKeyIntegrationsArrayKey) || [];
+    var integrations = [];
+
+    for(var integrationBase64String of integrationStrings) {
+      var jsonString = atob(integrationBase64String);
+      var integration = JSON.parse(jsonString);
+      integrations.push(integration);
+    }
+    return integrations;
+  }
+
+  saveIntegration(code) {
+    let integrations = this.getIntegrations();
+    integrations.push(code);
+    this.setComponentData(ComponentKeyIntegrationsArrayKey, integrations);
   }
 
   categorizedItems() {
@@ -60,24 +105,16 @@ export default class BridgeManager {
     return types;
   }
 
-  beginStreamingItems() {
+  beginStreamingItem() {
     this._didBeginStreaming = true;
-    this.componentManager.streamItems(["Note", "Tag", "SN|Component", "SN|Theme", "SF|Extension", "Extension", "SF|MFA", "SN|Editor"], (items) => {
-      for(var item of items) {
-        if(item.deleted) {
-          this.removeItemFromItems(item);
-          continue;
-        }
-        if(item.isMetadataUpdate) {
-          continue;
-        }
+    this.componentManager.streamContextItem((note) => {
+      this.note = note;
 
-        var index = this.indexOfItem(item);
-        if(index >= 0) {
-          this.items[index] = item;
-        } else {
-          this.items.push(item);
-        }
+      console.log("Received note", note);
+
+       // Only update UI on non-metadata updates.
+      if(note.isMetadataUpdate) {
+        return;
       }
 
       this.notifyObserversOfUpdate();
@@ -109,6 +146,7 @@ export default class BridgeManager {
   }
 
   notifyObserversOfUpdate() {
+    console.log("Notify observers");
     for(var observer of this.updateObservers) {
       observer.callback();
     }
