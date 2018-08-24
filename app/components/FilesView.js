@@ -31,22 +31,32 @@ export default class FilesView extends React.Component {
 
     // Allow user to drag anywhere in the window
     window.addEventListener("dragover", this.onWindowDragOver, false);
+    // window.addEventListener("dragleave", this.dropContainerOnExit, false);
     window.addEventListener("drop", this.onWindowDrop, false);
   }
 
   componentWillUnmount() {
     window.removeEventListener("dragover", this.onWindowDragOver, false);
+    // window.removeEventListener("dragleave", this.dropContainerOnExit, false);
     window.removeEventListener("drop", this.onWindowDrop, false);
   }
 
   onWindowDragOver = (evt) => {
-    this.dropContainerOnEnter();
-    evt = evt || event;
+    console.log("on wdinwo drag over");
     evt.preventDefault();
+    var id = evt.target.id;
+
+    // this.dropContainerOnEnter();
+    this.dropContainer.classList.add('is-dragover');
+
+    evt = evt || event;
   }
 
   onWindowDrop = (evt) => {
-    this.dropContainerOnExit();
+    console.log("On window drop");
+    evt.preventDefault();
+
+    // this.dropContainerOnExit();
 
     this.handledFiles = true;
     this.dropContainer.classList.add('is-uploading');
@@ -54,23 +64,24 @@ export default class FilesView extends React.Component {
     this.fileInput.files = evt.dataTransfer.files;
     this.handleDroppedFiles(evt.dataTransfer.files);
 
+  }
+
+  // dropContainerOnEnter = () => {
+  //   this.dropContainer.classList.add('is-dragover');
+  // }
+
+  dropContainerOnExit = (evt) => {
     evt.preventDefault();
+    this.dragging = false;
+    this.dropContainer.classList.remove('is-dragover');
   }
 
   get dropContainer() {
-    return document.getElementById("drop-container");
+    return document.getElementById("files-view");
   }
 
   get fileInput() {
     return document.getElementById("file-input");
-  }
-
-  dropContainerOnEnter = () => {
-    this.dropContainer.classList.add('is-dragover');
-  }
-
-  dropContainerOnExit = () => {
-    this.dropContainer.classList.remove('is-dragover');
   }
 
   configureFileForm() {
@@ -89,12 +100,12 @@ export default class FilesView extends React.Component {
       }
     };
 
-    dropContainer.ondragover = dropContainer.ondragenter = (evt) => {
-      this.dropContainerOnEnter();
-      evt.preventDefault();
-    };
-
-    dropContainer.ondragleave = dropContainer.ondragend = this.dropContainerOnEnter;
+    // dropContainer.ondragover = dropContainer.ondragenter = (evt) => {
+    //   this.dropContainerOnEnter();
+    //   evt.preventDefault();
+    // };
+    //
+    // dropContainer.ondragleave = dropContainer.ondragend = this.dropContainerOnEnter;
   }
 
   reset() {
@@ -168,7 +179,9 @@ export default class FilesView extends React.Component {
   }
 
   deleteFile = (metadata) => {
-    BridgeManager.get().deleteFile(metadata);
+    if(confirm(`Are you sure you want to delete "${metadata.content.fileName}"?`)) {
+      BridgeManager.get().deleteFile(metadata);
+    }
   }
 
   render() {
@@ -178,25 +191,27 @@ export default class FilesView extends React.Component {
     ];
 
     return (
-      <div id="backups">
+      <div id="files-view">
+        <div className="panel-row">
+          <h3>Files ({this.state.files.length})</h3>
+          <label>
+            <input type="file" style={{display: "none"}} onChange={(event) => {this.handleDroppedFiles(event.target.files)}} />
+            <a><i>Drag and drop a file anywhere to attach</i></a>
+          </label>
+
+        </div>
         <div>
           {this.state.files.map((file) =>
             <div>
-              <p>Filename: {file.content.fileName}</p>
-              <a onClick={() => {this.downloadFile(file)}}>Download</a>
-              <a onClick={() => {this.deleteFile(file)}}>Delete</a>
+              <p>File name:
+                <strong> {file.content.fileName}</strong>
+              </p>
+              <div className="horizontal-group">
+                  <a className="label info" onClick={() => {this.downloadFile(file)}}>Download</a>
+                  <a className="danger" onClick={() => {this.deleteFile(file)}}>Delete</a>
+              </div>
             </div>
           )}
-        </div>
-        <div id="drop-container" className="notification info dashed">
-          <div>
-            <form id="file-attacher-form">
-              <label class="file-input-wrapper">
-                <h3 class="instructions-label"><strong>Drag and Drop</strong> or select a file to add it to your vault.</h3>
-                <input id="file-input" type="file" name="file" class="file-input" />
-              </label>
-            </form>
-          </div>
         </div>
       </div>
     )

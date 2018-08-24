@@ -48,6 +48,7 @@ export default class BridgeManager {
     this.componentManager.acceptsThemes = false;
 
     this.componentManager.setSize("content", "90%", "90%");
+    this.componentManager.setSize("container", "100%", 500);
   }
 
   setComponentData(key, value) {
@@ -92,13 +93,19 @@ export default class BridgeManager {
     })
   }
 
+  getRawIntegrations() {
+    return this.getComponentData(ComponentKeyIntegrationsArrayKey) || [];
+  }
+
   getIntegrations() {
-    var integrationStrings = this.getComponentData(ComponentKeyIntegrationsArrayKey) || [];
+    var integrationStrings = this.getRawIntegrations();
     var integrations = [];
 
     for(var integrationBase64String of integrationStrings) {
+      console.log("Attempting to decode string", integrationBase64String);
       var jsonString = atob(integrationBase64String);
       var integration = JSON.parse(jsonString);
+      integration.rawCode = integrationBase64String;
       integrations.push(integration);
     }
     return integrations;
@@ -112,9 +119,17 @@ export default class BridgeManager {
   }
 
   saveIntegration(code) {
-    let integrations = this.getIntegrations();
+    console.log("Saving integration", code);
+    let integrations = this.getRawIntegrations();
     integrations.push(code);
     this.setComponentData(ComponentKeyIntegrationsArrayKey, integrations);
+  }
+
+  deleteIntegration(integrationObject) {
+    let rawIntegrations = this.getRawIntegrations();
+    _.pull(rawIntegrations, integrationObject.rawCode);
+    this.setComponentData(ComponentKeyIntegrationsArrayKey, rawIntegrations);
+    this.notifyObserversOfUpdate();
   }
 
   categorizedItems() {
@@ -206,7 +221,10 @@ export default class BridgeManager {
   }
 
   deleteFile(metadataItem) {
-    this.componentManager.deleteItem(metadataItem);
+    let integration = this.integrationForFile(metadataItem);
+    RelayManager.get().deleteFile(metadataItem, integration).then((response) => {
+      this.componentManager.deleteItem(metadataItem);
+    });
   }
 
   deleteItems(items) {

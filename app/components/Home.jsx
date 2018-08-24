@@ -15,8 +15,12 @@ export default class Home extends React.Component {
     return (
       <div id="home" className="panel static">
         <div className="content">
-          <IntegrationsView/>
-          <FilesView/>
+          <div className="panel-section">
+            <FilesView/>
+          </div>
+          <div className="panel-section">
+            <IntegrationsView/>
+          </div>
         </div>
       </div>
     )

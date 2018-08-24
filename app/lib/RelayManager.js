@@ -17,6 +17,10 @@ export default class RelayManager {
     this.relayServerUrl = "http://localhost:3020";
   }
 
+  getUrl() {
+    return this.relayServerUrl;
+  }
+
   async uploadFile(name, item, integration) {
     // integration.source
     // integration.authorization
@@ -31,7 +35,7 @@ export default class RelayManager {
       authorization: integration.authorization
     }
 
-    console.log("Uploading params to relay server", params);
+    // console.log("Uploading params to relay server", params);
 
     return new Promise((resolve, reject) => {
       this.httpManger.postAbsolute(url, params, (response) => {
@@ -52,7 +56,28 @@ export default class RelayManager {
       authorization: integration.authorization
     }
 
-    console.log("Downloading file with params", params);
+    // console.log("Downloading file with params", params);
+
+    return new Promise((resolve, reject) => {
+      this.httpManger.postAbsolute(url, params, (response) => {
+        console.log("Download success response", response);
+        resolve(response);
+      }, (errorResponse) => {
+        var error = errorResponse.error;
+        console.log("Download error response", errorResponse);
+        reject(error);
+      })
+    });
+  }
+
+  async deleteFile(metadataItem, integration) {
+    let url = `${this.relayServerUrl}/integrations/delete-item`;
+    let params = {
+      metadata: metadataItem.content.serverMetadata,
+      authorization: integration.authorization
+    }
+
+    // console.log("Deleting file with params", params);
 
     return new Promise((resolve, reject) => {
       this.httpManger.postAbsolute(url, params, (response) => {
