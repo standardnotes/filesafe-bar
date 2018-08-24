@@ -1,9 +1,13 @@
 import ComponentManager from 'sn-components-api';
 import "standard-file-js/dist/regenerator.js";
-import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager } from 'standard-file-js';
+import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
+import RelayManager from "./RelayManager"
 
 const ComponentKeyCredentialsKey = "ComponentKeyCredentialsKey";
 const ComponentKeyIntegrationsArrayKey = "ComponentKeyIntegrationsArrayKey";
+
+const FileItemContentTypeKey = "SN|FileSafe|File";
+const FileItemMetadataContentTypeKey = "SN|FileSafe|FileMetadata";
 
 export default class BridgeManager {
 
@@ -33,6 +37,12 @@ export default class BridgeManager {
   initiateBridge(onReady) {
     this.componentManager = new ComponentManager([], () => {
       onReady && onReady();
+
+      this.loadOrCreateCredentials().then((credentials) => {
+        console.log("Loaded credentials", credentials);
+        this.authParams = credentials.authParams;
+        this.keys = credentials.keys;
+      });
     });
 
     this.componentManager.acceptsThemes = false;
@@ -74,6 +84,14 @@ export default class BridgeManager {
     return this._didBeginStreaming;
   }
 
+  async saveItems(items) {
+    return new Promise((resolve, reject) => {
+      this.componentManager.saveItems(items, (response) => {
+        resolve(response);
+      })
+    })
+  }
+
   getIntegrations() {
     var integrationStrings = this.getComponentData(ComponentKeyIntegrationsArrayKey) || [];
     var integrations = [];
@@ -84,6 +102,13 @@ export default class BridgeManager {
       integrations.push(integration);
     }
     return integrations;
+  }
+
+  integrationForFile(metadata) {
+    return this.getIntegrations().find((integration) => {
+      console.log("integrationForFile", integration, metadata);
+      return metadata.content.serverMetadata && integration.source == metadata.content.serverMetadata.source;
+    });
   }
 
   saveIntegration(code) {
@@ -108,17 +133,60 @@ export default class BridgeManager {
   beginStreamingItem() {
     this._didBeginStreaming = true;
     this.componentManager.streamContextItem((note) => {
-      this.note = note;
+      this.note = new SFItem(note);
 
-      console.log("Received note", note);
+      console.log("Received note", this.note);
 
        // Only update UI on non-metadata updates.
-      if(note.isMetadataUpdate) {
+      if(this.note.isMetadataUpdate) {
         return;
       }
 
       this.notifyObserversOfUpdate();
     });
+
+    this.componentManager.streamItems([FileItemMetadataContentTypeKey], (items) => {
+      for(var item of items) {
+        item = new SFItem(item);
+
+        if(item.deleted) {
+          this.removeItemFromItems(item);
+          continue;
+        }
+        if(item.isMetadataUpdate) {
+          continue;
+        }
+
+        var index = this.indexOfItem(item);
+        if(index >= 0) {
+          this.items[index] = item;
+        } else {
+          this.items.push(item);
+        }
+      }
+
+      this.notifyObserversOfUpdate();
+    })
+  }
+
+  // Returns the metadata objects associated with the current note
+  filesForCurrentNote() {
+    return this.items.filter((metadataItem) => {
+      return metadataItem.hasRelationshipWithItem(this.note);
+    })
+  }
+
+  indexOfItem(item) {
+    for(var index in this.items) {
+      if(this.items[index].uuid == item.uuid) {
+        return index;
+      }
+    }
+    return -1;
+  }
+
+  removeItemFromItems(item) {
+    this.items = this.items.filter((candidate) => {return candidate.uuid !== item.uuid});
   }
 
   createItems(items, callback) {
@@ -137,6 +205,10 @@ export default class BridgeManager {
     return -1;
   }
 
+  deleteFile(metadataItem) {
+    this.componentManager.deleteItem(metadataItem);
+  }
+
   deleteItems(items) {
     this.componentManager.deleteItems(items);
   }
@@ -146,30 +218,68 @@ export default class BridgeManager {
   }
 
   notifyObserversOfUpdate() {
-    console.log("Notify observers");
     for(var observer of this.updateObservers) {
       observer.callback();
     }
   }
 
-  humanReadableTitleForExtensionType(type, pluralize) {
-    let mapping = {
-      "Note" : "Note",
-      "Tag" : "Tag",
-      "Extension" : "Action",
-      "SF|Extension" : "Server Extension",
-      "SN|Theme" : "Theme",
-      "SN|Editor" : "Editor",
-      "SN|Component" : "Component"
-    }
+  async uploadFile(data, inputFileName, fileType) {
+    var writeData = data;
+    var fileItem = new SFItem({
+      content_type: FileItemContentTypeKey,
+      content: {
+        rawData: writeData,
+        fileName: inputFileName,
+        fileType: fileType
+      }
+    });
 
-    var value = mapping[type];
-    if(!value) {
-      value = type;
-    }
-    else if(pluralize) {
-      value += "s";
-    }
-    return value;
+    var integration = BridgeManager.get().getIntegrations()[0];
+
+    var itemParamsObject = new SFItemParams(fileItem, this.keys, this.authParams);
+    var itemParams = await itemParamsObject.paramsForSync();
+
+    var outputFileName = `${inputFileName}.sf.json`;
+    RelayManager.get().uploadFile(outputFileName, itemParams, integration).then((metadata) => {
+      var metadataItem = new SFItem({
+        content_type: FileItemMetadataContentTypeKey,
+        content: {
+          serverMetadata: metadata,
+          fileName: inputFileName,
+          fileType: fileType
+        }
+      });
+
+      metadataItem.addItemAsRelationship(this.note);
+
+      this.saveItems([metadataItem]).then((fileSaveResponse) => {
+        console.log("Save items response", fileSaveResponse);
+      });
+    }).catch((error) => {
+
+    });
   }
+
+  async downloadFile(metadataItem) {
+    var integration = this.integrationForFile(metadataItem);
+    console.log("Using integration for download", integration);
+    return RelayManager.get().downloadFile(metadataItem, integration).then((data) => {
+      var item = data.items[0];
+      return this.decryptFile(item);
+    })
+  }
+
+  async decryptFile(item) {
+    console.log("Decrypting item", item);
+
+    return SFJS.itemTransformer.decryptItem(item, this.keys).then(() => {
+      var decryptedItem = new SFItem(item);
+      console.log("Decrypted item result:", decryptedItem);
+
+      var urlData = decryptedItem.content.rawData;
+      console.log("Decrypted raw data", urlData);
+      return urlData;
+    })
+  }
+
 }

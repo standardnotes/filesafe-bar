@@ -2,7 +2,6 @@ import React from 'react';
 import BridgeManager from "../lib/BridgeManager.js";
 import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer } from 'standard-file-js';
-import Item from "../lib/item";
 
 export default class IntegrationsView extends React.Component {
 

@@ -1,8 +1,7 @@
 import React from 'react';
 import BridgeManager from "../lib/BridgeManager.js";
 import "standard-file-js/dist/regenerator.js";
-import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFItemParams } from 'standard-file-js';
-import Item from "../lib/item";
+import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFItemParams, SFItem } from 'standard-file-js';
 import { Base64 } from 'js-base64';
 import RelayManager from '../lib/RelayManager';
 
@@ -10,50 +9,21 @@ export default class FilesView extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {files: []};
 
     BridgeManager.get().initiateBridge(() => {
-      BridgeManager.get().loadOrCreateCredentials().then((credentials) => {
-        console.log("Loaded credentials", credentials);
-        this.authParams = credentials.authParams;
-        this.keys = credentials.keys;
-      });
-
       BridgeManager.get().beginStreamingItem();
     });
 
     BridgeManager.get().addUpdateObserver(() => {
       this.reload();
     })
-
-    // SFJS.crypto.generateInitialKeysAndAuthParamsForUser("me@bitar.io", "password").then((results) => {
-    //   console.log("Computed initial values:", results);
-    //   let keys = results.keys;
-    //   let authParams = results.authParams;
-    //
-    //   this.keys = keys;
-    //   this.authParams = authParams;
-    //
-    //   var item = new Item({
-    //     content_type: "SN|FileVault|File",
-    //     content: {
-    //       rawData: "Hello, world."
-    //     }
-    //   });
-    //
-    //   SFJS.itemTransformer.encryptItem(item, this.keys, authParams).then((encryptedItem) => {
-    //     console.log("Encrypted item", encryptedItem);
-    //     encryptedItem.uuid = item.uuid;
-    //     SFJS.itemTransformer.decryptItem(encryptedItem, this.keys).then(() => {
-    //       console.log("Decrypted item", encryptedItem);
-    //       console.assert(!encryptedItem.errorDecrypting);
-    //     });
-    //   });
-    // });
   }
 
   reload() {
-
+    var files = BridgeManager.get().filesForCurrentNote();
+    console.log("Loaded files", files);
+    this.setState({files: files});
   }
 
   componentDidMount() {
@@ -157,45 +127,7 @@ export default class FilesView extends React.Component {
   }
 
   async encryptFile(data, inputFileName, fileType) {
-    var writeData = data;
-    var item = new Item({
-      content_type: "SN|FileSafe|File",
-      content: {
-        rawData: writeData,
-        fileName: inputFileName,
-        fileType: fileType
-      }
-    });
-
-    var integration = BridgeManager.get().getIntegrations()[0];
-
-    var itemParamsObject = new SFItemParams(item, this.keys, this.authParams);
-    var itemParams = await itemParamsObject.paramsForSync();
-
-    var outputFileName = `${inputFileName}.sf.json`;
-    RelayManager.get().uploadFile(outputFileName, itemParams, integration, (response) => {
-
-    });
-
-    // encryptedItem.uuid = item.uuid;
-    // this.downloadData(JSON.stringify(encryptedItem, null, 2 /* pretty print */), `${fileName}.sf.json`);
-  }
-
-  decryptFile(data) {
-    let parsedData = JSON.parse(data);
-    var item = parsedData.items[0];
-
-    console.log("Decrypting item", item);
-
-    SFJS.itemTransformer.decryptItem(item, this.keys).then(() => {
-      var decryptedItem = new Item(item);
-      decryptedItem.content = JSON.parse(decryptedItem.content);
-      console.log("Decrypted item result:", decryptedItem);
-
-      var urlData = decryptedItem.content.rawData;
-      console.log("Decrypted raw data", urlData);
-      this.downloadData(this.dataURItoBinary(urlData), decryptedItem.content.fileName, decryptedItem.content.fileType);
-    })
+    return BridgeManager.get().uploadFile(data, inputFileName, fileType);
   }
 
   dataURItoBinary(dataURI) {
@@ -229,6 +161,16 @@ export default class FilesView extends React.Component {
     return this.textFile;
   }
 
+  downloadFile = (metadata) => {
+    BridgeManager.get().downloadFile(metadata).then((data) => {
+      this.downloadData(this.dataURItoBinary(data), metadata.content.fileName, metadata.content.fileType);
+    })
+  }
+
+  deleteFile = (metadata) => {
+    BridgeManager.get().deleteFile(metadata);
+  }
+
   render() {
 
     let additionalColumns = [
@@ -237,6 +179,15 @@ export default class FilesView extends React.Component {
 
     return (
       <div id="backups">
+        <div>
+          {this.state.files.map((file) =>
+            <div>
+              <p>Filename: {file.content.fileName}</p>
+              <a onClick={() => {this.downloadFile(file)}}>Download</a>
+              <a onClick={() => {this.deleteFile(file)}}>Delete</a>
+            </div>
+          )}
+        </div>
         <div id="drop-container" className="notification info dashed">
           <div>
             <form id="file-attacher-form">
