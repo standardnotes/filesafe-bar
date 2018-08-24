@@ -39,7 +39,7 @@ export default class RelayManager {
 
     return new Promise((resolve, reject) => {
       this.httpManger.postAbsolute(url, params, (response) => {
-        console.log("Upload success response", response);
+        // console.log("Upload success response", response);
         resolve(response.metadata);
       }, (errorResponse) => {
         var error = errorResponse.error;
@@ -60,7 +60,7 @@ export default class RelayManager {
 
     return new Promise((resolve, reject) => {
       this.httpManger.postAbsolute(url, params, (response) => {
-        console.log("Download success response", response);
+        // console.log("Download success response", response);
         resolve(response);
       }, (errorResponse) => {
         var error = errorResponse.error;
@@ -81,7 +81,7 @@ export default class RelayManager {
 
     return new Promise((resolve, reject) => {
       this.httpManger.postAbsolute(url, params, (response) => {
-        console.log("Download success response", response);
+        // console.log("Download success response", response);
         resolve(response);
       }, (errorResponse) => {
         var error = errorResponse.error;

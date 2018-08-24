@@ -9,6 +9,8 @@ const ComponentKeyIntegrationsArrayKey = "ComponentKeyIntegrationsArrayKey";
 const FileItemContentTypeKey = "SN|FileSafe|File";
 const FileItemMetadataContentTypeKey = "SN|FileSafe|FileMetadata";
 
+const DefaultHeight = 75;
+
 export default class BridgeManager {
 
   /* Singleton */
@@ -45,10 +47,31 @@ export default class BridgeManager {
       });
     });
 
-    this.componentManager.acceptsThemes = false;
+    // this.componentManager.acceptsThemes = false;
 
     this.componentManager.setSize("content", "90%", "90%");
-    this.componentManager.setSize("container", "100%", 500);
+    this.componentManager.setSize("container", "100%", DefaultHeight);
+  }
+
+  toggleHeight() {
+    if(this.expanded) {
+      this.setHeightCollapsed();
+    } else {
+      this.setHeightExpanded();
+    }
+  }
+
+  setHeightExpanded() {
+    this.expanded = true;
+    this.componentManager.setSize("container", "100%", 200);
+  }
+
+  setHeightCollapsed() {
+    this.expanded = false;
+    this.componentManager.setSize("container", "100%", DefaultHeight);
+  }
+
+  setHeight(height) {
   }
 
   setComponentData(key, value) {

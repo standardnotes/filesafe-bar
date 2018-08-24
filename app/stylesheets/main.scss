@@ -5,6 +5,12 @@ html, body {
   height: 100%;
 }
 
+body {
+  &.highlight {
+    border: 2px dashed;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -12,19 +18,52 @@ html, body {
 .sn-component {
   user-select: auto !important;
 
+ .panel .content {
+   padding-top: 6px !important;
+ }
+
   .button-group .button {
     vertical-align: middle;
+  }
+
+  .button.no-border {
+    border: none;
+  }
+
+  .button {
+    user-select: none;
+  }
+
+  label.no-style {
+    margin: 0;
+    font-size: inherit;
   }
 }
 
 #files-view {
-  &.is-uploading {
+  margin-top: 10px;
 
+  #add-file-button-container {
+    margin-right: 18px;
   }
 
-  &.is-dragover {
-    // border: 1px dashed blue;
-    // padding: 10px;
+  .segmented-buttons {
+    margin-right: 10px;
+  }
+
+  .files {
+    display: flex;
+    // flex-direction: row;
+
+
+    .button {
+      border: none;
+
+      &.selected {
+        @extend .button.info:hover;
+        margin-right: 0px;
+      }
+    }
   }
 }
 

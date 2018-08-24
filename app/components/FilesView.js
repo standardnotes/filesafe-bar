@@ -22,58 +22,66 @@ export default class FilesView extends React.Component {
 
   reload() {
     var files = BridgeManager.get().filesForCurrentNote();
-    console.log("Loaded files", files);
+    // console.log("Loaded files", files);
     this.setState({files: files});
   }
 
   componentDidMount() {
     this.configureFileForm();
 
+    const body = document.getElementsByTagName('body')[0];
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      window.addEventListener(eventName, preventDefaults, false)
+    })
+
+    function preventDefaults (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    var highlight = (e) => {
+      body.classList.add('highlight');
+      body.classList.add('border-color');
+    }
+
+    var unhighlight = (e) => {
+      body.classList.remove('highlight');
+      body.classList.remove('border-color');
+    }
+
+    ['dragenter', 'dragover'].forEach((eventName) => {
+      window.addEventListener(eventName, highlight, false)
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      window.addEventListener(eventName, highlight, false)
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      window.addEventListener(eventName, unhighlight, false)
+    });
+
+    var handleDrop = (e) => {
+      let dt = e.dataTransfer;
+      let files = dt.files;
+
+      this.handleDroppedFiles(files)
+    }
+
+    window.addEventListener('drop', handleDrop, false)
+
+
     // Allow user to drag anywhere in the window
-    window.addEventListener("dragover", this.onWindowDragOver, false);
-    // window.addEventListener("dragleave", this.dropContainerOnExit, false);
-    window.addEventListener("drop", this.onWindowDrop, false);
+    // window.addEventListener("dragover", this.onWindowDragOver, false);
+    // // window.addEventListener("dragleave", this.dropContainerOnExit, false);
+    // window.addEventListener("drop", this.onWindowDrop, false);
   }
 
   componentWillUnmount() {
-    window.removeEventListener("dragover", this.onWindowDragOver, false);
-    // window.removeEventListener("dragleave", this.dropContainerOnExit, false);
-    window.removeEventListener("drop", this.onWindowDrop, false);
-  }
-
-  onWindowDragOver = (evt) => {
-    console.log("on wdinwo drag over");
-    evt.preventDefault();
-    var id = evt.target.id;
-
-    // this.dropContainerOnEnter();
-    this.dropContainer.classList.add('is-dragover');
-
-    evt = evt || event;
-  }
-
-  onWindowDrop = (evt) => {
-    console.log("On window drop");
-    evt.preventDefault();
-
-    // this.dropContainerOnExit();
-
-    this.handledFiles = true;
-    this.dropContainer.classList.add('is-uploading');
-
-    this.fileInput.files = evt.dataTransfer.files;
-    this.handleDroppedFiles(evt.dataTransfer.files);
-
-  }
-
-  // dropContainerOnEnter = () => {
-  //   this.dropContainer.classList.add('is-dragover');
-  // }
-
-  dropContainerOnExit = (evt) => {
-    evt.preventDefault();
-    this.dragging = false;
-    this.dropContainer.classList.remove('is-dragover');
+    // window.removeEventListener("dragover", this.onWindowDragOver, false);
+    // // window.removeEventListener("dragleave", this.dropContainerOnExit, false);
+    // window.removeEventListener("drop", this.onWindowDrop, false);
   }
 
   get dropContainer() {
@@ -148,7 +156,7 @@ export default class FilesView extends React.Component {
       array.push(binary.charCodeAt(i));
     }
     return new Uint8Array(array);
-}
+  }
 
   downloadData(data, fileName, fileType) {
     var link = document.createElement('a');
@@ -172,6 +180,16 @@ export default class FilesView extends React.Component {
     return this.textFile;
   }
 
+  selectFile = (event, metadata) => {
+    var element = event.target;
+    element.focus();
+    if(this.state.selectedFile == metadata) {
+      this.setState({selectedFile: null})
+    } else {
+      this.setState({selectedFile: metadata});
+    }
+  }
+
   downloadFile = (metadata) => {
     BridgeManager.get().downloadFile(metadata).then((data) => {
       this.downloadData(this.dataURItoBinary(data), metadata.content.fileName, metadata.content.fileType);
@@ -184,6 +202,14 @@ export default class FilesView extends React.Component {
     }
   }
 
+  manageIntegrationsClicked = () => {
+    BridgeManager.get().toggleHeight();
+  }
+
+  isFileSelected = (metadata) => {
+    return this.state.selectedFile == metadata;
+  }
+
   render() {
 
     let additionalColumns = [
@@ -191,27 +217,47 @@ export default class FilesView extends React.Component {
     ];
 
     return (
-      <div id="files-view">
+      <div className="sn-component" id="files-view">
         <div className="panel-row">
-          <h3>Files ({this.state.files.length})</h3>
-          <label>
-            <input type="file" style={{display: "none"}} onChange={(event) => {this.handleDroppedFiles(event.target.files)}} />
-            <a><i>Drag and drop a file anywhere to attach</i></a>
-          </label>
 
-        </div>
-        <div>
-          {this.state.files.map((file) =>
-            <div>
-              <p>File name:
-                <strong> {file.content.fileName}</strong>
-              </p>
-              <div className="horizontal-group">
-                  <a className="label info" onClick={() => {this.downloadFile(file)}}>Download</a>
-                  <a className="danger" onClick={() => {this.deleteFile(file)}}>Delete</a>
+          <div className="files">
+            <div id="add-file-button-container">
+              <div className="file button success">
+                <label className="no-style">
+                  <input type="file" style={{display: "none"}} onChange={(event) => {this.handleDroppedFiles(event.target.files)}} />
+                  <div className="label">Attach File</div>
+                </label>
               </div>
             </div>
-          )}
+
+            {this.state.files.map((file) =>
+              <div className="segmented-buttons">
+                <div onClick={(event) => {this.selectFile(event, file)}} className={"file button info " + (this.isFileSelected(file) ? "selected border-color" : undefined)}>
+                  <div className="label">
+                    {file.content.fileName}
+                  </div>
+                </div>
+
+                {this.isFileSelected(file) &&
+                  [
+                    <div onClick={() => {this.downloadFile(file)}} className="button info no-border">
+                      <div className="label">Download</div>
+                    </div>,
+
+                    <div onClick={() => {this.deleteFile(file)}} className="button danger no-border">
+                      <div className="label">Delete</div>
+                    </div>
+                  ]
+                }
+              </div>
+            )}
+
+          </div>
+
+          <div className="button default no-border" onClick={this.manageIntegrationsClicked}>
+            <div className="label">Settings</div>
+          </div>
+
         </div>
       </div>
     )
