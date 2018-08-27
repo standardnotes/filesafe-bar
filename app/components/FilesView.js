@@ -9,6 +9,7 @@ export default class FilesView extends React.Component {
 
   constructor(props) {
     super(props);
+
     this.state = {files: []};
 
     BridgeManager.get().initiateBridge(() => {
@@ -22,7 +23,6 @@ export default class FilesView extends React.Component {
 
   reload() {
     var files = BridgeManager.get().filesForCurrentNote();
-    // console.log("Loaded files", files);
     this.setState({files: files});
   }
 
@@ -70,18 +70,10 @@ export default class FilesView extends React.Component {
     }
 
     window.addEventListener('drop', handleDrop, false)
-
-
-    // Allow user to drag anywhere in the window
-    // window.addEventListener("dragover", this.onWindowDragOver, false);
-    // // window.addEventListener("dragleave", this.dropContainerOnExit, false);
-    // window.addEventListener("drop", this.onWindowDrop, false);
   }
 
   componentWillUnmount() {
-    // window.removeEventListener("dragover", this.onWindowDragOver, false);
-    // // window.removeEventListener("dragleave", this.dropContainerOnExit, false);
-    // window.removeEventListener("drop", this.onWindowDrop, false);
+    // TODO: Deregister window listeners
   }
 
   get dropContainer() {
@@ -107,50 +99,63 @@ export default class FilesView extends React.Component {
         this.handleDroppedFiles(files);
       }
     };
-
-    // dropContainer.ondragover = dropContainer.ondragenter = (evt) => {
-    //   this.dropContainerOnEnter();
-    //   evt.preventDefault();
-    // };
-    //
-    // dropContainer.ondragleave = dropContainer.ondragend = this.dropContainerOnEnter;
   }
 
   reset() {
     this.setState({rawData: null, decryptedItems: null, requestPassword: false});
   }
 
-  handleDroppedFiles = (files) => {
+  handleDroppedFiles = async (files) => {
     let file = files[0];
-    // console.log("Dropped file", file);
 
     var reader = new FileReader();
     var decrypt = false;
 
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       var data = e.target.result;
-      // console.log("Read file data", data);
       if(decrypt) {
         this.decryptFile(data);
       } else {
-        this.encryptFile(data, file.name, file.type);
+        var string = await SFJS.crypto.arrayBufferToBase64(data);
+        this.encryptFile(string, file.name, file.type);
       }
     }
+
+    this.setState({status: "Reading file..."});
 
     if(file.name.endsWith(".sf") || file.name.endsWith(".json")) {
       decrypt = true;
       reader.readAsText(file);
     } else {
-      reader.readAsDataURL(file);
+      reader.readAsArrayBuffer(file);
     }
   }
 
+  async wait(seconds) {
+    return new Promise((resolve, reject) => {
+      setTimeout(function () {
+        resolve();
+      }, seconds * 1000.0);
+    })
+  }
+
   async encryptFile(data, inputFileName, fileType) {
-    return BridgeManager.get().uploadFile(data, inputFileName, fileType);
+    this.setState({status: "Encrypting..."});
+    BridgeManager.get().encryptFile(data, inputFileName, fileType).then(async (itemParams) => {
+      console.log("Encryption worker response received");
+      this.setState({status: "Uploading..."});
+      await this.wait(0.5);
+      BridgeManager.get().uploadFile(itemParams, inputFileName, fileType).then(() => {
+        this.setState({status: "Upload Success."});
+        setTimeout(() => {
+          this.setState({status: null});
+        }, 2000);
+      })
+    })
   }
 
   dataURItoBinary(dataURI) {
-    var binary = atob(dataURI.split(',')[1]);
+    var binary = atob(dataURI);
     var array = [];
     for(var i = 0; i < binary.length; i++) {
       array.push(binary.charCodeAt(i));
@@ -191,15 +196,18 @@ export default class FilesView extends React.Component {
   }
 
   downloadFile = (metadata) => {
-    BridgeManager.get().downloadFile(metadata).then((data) => {
-      this.downloadData(this.dataURItoBinary(data), metadata.content.fileName, metadata.content.fileType);
+    this.setState({status: "Downloading..."});
+    BridgeManager.get().downloadFile(metadata).then((item) => {
+      this.setState({status: "Decrypting..."});
+      BridgeManager.get().decryptFile(item).then((data) => {
+        this.downloadData(this.dataURItoBinary(data), metadata.content.fileName, metadata.content.fileType);
+        this.setState({status: null});
+      })
     })
   }
 
   deleteFile = (metadata) => {
-    if(confirm(`Are you sure you want to delete "${metadata.content.fileName}"?`)) {
-      BridgeManager.get().deleteFile(metadata);
-    }
+    BridgeManager.get().deleteFile(metadata);
   }
 
   manageIntegrationsClicked = () => {
@@ -218,9 +226,16 @@ export default class FilesView extends React.Component {
 
     return (
       <div className="sn-component" id="files-view">
-        <div className="panel-row">
+
+        <div className="panel-row align-top">
 
           <div className="files">
+            {this.state.status &&
+              <div id="file-status" className="horizontal-group">
+                <div className="spinner info small" />
+                <div className="info">{this.state.status}</div>
+              </div>
+            }
             <div id="add-file-button-container">
               <div className="file button success">
                 <label className="no-style">
@@ -251,7 +266,6 @@ export default class FilesView extends React.Component {
                 }
               </div>
             )}
-
           </div>
 
           <div className="button default no-border" onClick={this.manageIntegrationsClicked}>

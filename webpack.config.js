@@ -39,6 +39,10 @@ module.exports = {
           publicPath: '../'
         }),
       },
+      // {
+      //   test: /\.worker\.js$/,
+      //   use: { loader: 'worker-loader' }
+      // },
       { test: /\.js[x]?$/, include: [
         path.resolve(__dirname, 'app'),
         // These lines have no effect. These files are instead imported using the import syntax inside js files.

@@ -22,9 +22,6 @@ export default class RelayManager {
   }
 
   async uploadFile(name, item, integration) {
-    // integration.source
-    // integration.authorization
-
     let url = `${this.relayServerUrl}/integrations/save-item`;
     let params = {
       file: {
@@ -34,6 +31,8 @@ export default class RelayManager {
       source: integration.source,
       authorization: integration.authorization
     }
+
+    console.log("Beginning relay upload");
 
     // console.log("Uploading params to relay server", params);
 

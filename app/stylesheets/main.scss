@@ -47,17 +47,22 @@ body {
     margin-right: 18px;
   }
 
+  #file-status {
+    margin-right: 30px;
+    padding-top: 8px;
+  }
+
   .segmented-buttons {
     margin-right: 10px;
   }
 
   .files {
     display: flex;
-    // flex-direction: row;
-
+    flex-wrap: wrap;
 
     .button {
       border: none;
+      margin-bottom: 10px;
 
       &.selected {
         @extend .button.info:hover;

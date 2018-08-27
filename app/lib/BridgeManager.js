@@ -1,17 +1,19 @@
 import ComponentManager from 'sn-components-api';
 import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
-import RelayManager from "./RelayManager"
+import RelayManager from "./RelayManager";
 
 const ComponentKeyCredentialsKey = "ComponentKeyCredentialsKey";
 const ComponentKeyIntegrationsArrayKey = "ComponentKeyIntegrationsArrayKey";
 
-const FileItemContentTypeKey = "SN|FileSafe|File";
-const FileItemMetadataContentTypeKey = "SN|FileSafe|FileMetadata";
+var EncryptionWorker = require("worker-loader?name=hash.worker.js!./encryptionWorker");
+var UploadWorker = require("worker-loader?name=hash.worker.js!./uploadWorker");
 
-const DefaultHeight = 75;
+const DefaultHeight = 135;
 
 export default class BridgeManager {
+  static FileItemContentTypeKey = "SN|FileSafe|File";
+  static FileItemMetadataContentTypeKey = "SN|FileSafe|FileMetadata";
 
   /* Singleton */
   static instance = null;
@@ -21,6 +23,7 @@ export default class BridgeManager {
   }
 
   constructor(onReceieveItems) {
+
     this.updateObservers = [];
     this.items = [];
     this.size = null;
@@ -125,7 +128,7 @@ export default class BridgeManager {
     var integrations = [];
 
     for(var integrationBase64String of integrationStrings) {
-      console.log("Attempting to decode string", integrationBase64String);
+      // console.log("Attempting to decode string", integrationBase64String);
       var jsonString = atob(integrationBase64String);
       var integration = JSON.parse(jsonString);
       integration.rawCode = integrationBase64String;
@@ -183,7 +186,7 @@ export default class BridgeManager {
       this.notifyObserversOfUpdate();
     });
 
-    this.componentManager.streamItems([FileItemMetadataContentTypeKey], (items) => {
+    this.componentManager.streamItems([BridgeManager.FileItemMetadataContentTypeKey], (items) => {
       for(var item of items) {
         item = new SFItem(item);
 
@@ -243,11 +246,19 @@ export default class BridgeManager {
     return -1;
   }
 
-  deleteFile(metadataItem) {
-    let integration = this.integrationForFile(metadataItem);
-    RelayManager.get().deleteFile(metadataItem, integration).then((response) => {
-      this.componentManager.deleteItem(metadataItem);
-    });
+  async deleteFile(metadataItem) {
+    return new Promise((resolve, reject) => {
+      this.componentManager.deleteItem(metadataItem, (response) => {
+        if(response.deleted) {
+          let integration = this.integrationForFile(metadataItem);
+          RelayManager.get().deleteFile(metadataItem, integration).then((relayResponse) => {
+            resolve();
+          })
+        } else {
+          resolve(response);
+        }
+      });
+    })
   }
 
   deleteItems(items) {
@@ -264,26 +275,23 @@ export default class BridgeManager {
     }
   }
 
-  async uploadFile(data, inputFileName, fileType) {
-    var writeData = data;
-    var fileItem = new SFItem({
-      content_type: FileItemContentTypeKey,
-      content: {
-        rawData: writeData,
-        fileName: inputFileName,
-        fileType: fileType
-      }
-    });
-
+  async uploadFile(itemParams, inputFileName, fileType) {
     var integration = BridgeManager.get().getIntegrations()[0];
-
-    var itemParamsObject = new SFItemParams(fileItem, this.keys, this.authParams);
-    var itemParams = await itemParamsObject.paramsForSync();
-
     var outputFileName = `${inputFileName}.sf.json`;
-    RelayManager.get().uploadFile(outputFileName, itemParams, integration).then((metadata) => {
+
+    return new Promise((resolve, reject) => {
+      const worker = new UploadWorker();
+
+      worker.addEventListener("message", function (event) {
+        console.log("Upload worker complete", event.data);
+      });
+
+      worker.postMessage({outputFileName, itemParams, integration});
+    })
+
+    return RelayManager.get().uploadFile(outputFileName, itemParams, integration).then((metadata) => {
       var metadataItem = new SFItem({
-        content_type: FileItemMetadataContentTypeKey,
+        content_type: BridgeManager.FileItemMetadataContentTypeKey,
         content: {
           serverMetadata: metadata,
           fileName: inputFileName,
@@ -292,10 +300,7 @@ export default class BridgeManager {
       });
 
       metadataItem.addItemAsRelationship(this.note);
-
-      this.saveItems([metadataItem]).then((fileSaveResponse) => {
-        console.log("Save items response", fileSaveResponse);
-      });
+      this.saveItems([metadataItem]);
     }).catch((error) => {
 
     });
@@ -303,23 +308,48 @@ export default class BridgeManager {
 
   async downloadFile(metadataItem) {
     var integration = this.integrationForFile(metadataItem);
-    console.log("Using integration for download", integration);
+    // console.log("Using integration for download", integration);
     return RelayManager.get().downloadFile(metadataItem, integration).then((data) => {
       var item = data.items[0];
-      return this.decryptFile(item);
+      return item;
+    })
+  }
+
+  async encryptFile(data, inputFileName, fileType) {
+    return new Promise((resolve, reject) => {
+      const worker = new EncryptionWorker();
+
+      worker.addEventListener("message", function (event) {
+        // console.log("Encryption worker complete", event.data);
+        resolve(event.data.itemParams);
+      });
+
+      worker.postMessage({
+        operation: "encrypt",
+        keys: BridgeManager.get().keys,
+        authParams: BridgeManager.get().authParams,
+        contentType: BridgeManager.FileItemContentTypeKey,
+        fileData: data,
+        fileName: inputFileName,
+        fileType: fileType
+      });
     })
   }
 
   async decryptFile(item) {
-    console.log("Decrypting item", item);
+    return new Promise((resolve, reject) => {
+      const worker = new EncryptionWorker();
 
-    return SFJS.itemTransformer.decryptItem(item, this.keys).then(() => {
-      var decryptedItem = new SFItem(item);
-      console.log("Decrypted item result:", decryptedItem);
+      worker.addEventListener("message", function (event) {
+        // console.log("Decryptkion worker complete", event.data);
+        resolve(event.data.decryptedData);
+      });
 
-      var urlData = decryptedItem.content.rawData;
-      console.log("Decrypted raw data", urlData);
-      return urlData;
+      worker.postMessage({
+        operation: "decrypt",
+        keys: BridgeManager.get().keys,
+        item: item
+      });
     })
   }
 

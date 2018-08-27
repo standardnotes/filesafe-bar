@@ -13,7 +13,6 @@
     "main": "dist/index.html"
   },
   "devDependencies": {
-    "compare-versions": "^3.1.0",
     "babel-core": "6.x",
     "babel-eslint": "7.x",
     "babel-loader": "6.x",
@@ -23,6 +22,7 @@
     "babel-preset-stage-0": "6.x",
     "babel-runtime": "6.x",
     "commitizen": "^2.9.3",
+    "compare-versions": "^3.1.0",
     "conventional-changelog-cli": "1.x",
     "copy-webpack-plugin": "latest",
     "css-loader": "~0.28.7",
@@ -42,13 +42,14 @@
     "react": "16.x",
     "react-dom": "16.x",
     "sass-loader": "^6.0.6",
-    "sn-components-api": "1.1.2",
+    "sn-components-api": "1.1.8",
+    "sn-stylekit": "1.1.1",
+    "standard-file-js": "file:~/Desktop/sn/dev/sfjs",
     "style-loader": "~0.13.1",
     "validate-commit-msg": "2.x",
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.7",
-    "sn-stylekit": "1.1.1",
-    "standard-file-js": "0.3.13"
+    "worker-loader": "^2.0.0"
   },
   "dependencies": {
     "js-base64": "^2.4.5",
