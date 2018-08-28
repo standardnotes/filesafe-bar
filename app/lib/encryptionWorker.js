@@ -1,9 +1,10 @@
 import _ from 'lodash';
 import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFCryptoWeb, SFItemTransformer, SFHttpManager, SFItem, SFItemParams } from 'standard-file-js';
+import RelayManager from "./RelayManager";
 
 self.addEventListener('message', async function(e) {
-  // console.log("Worker received message", e.data, self.SFJS);
+  console.log("Encryption worker received message", e.data);
   var data = e.data;
 
   if(data.operation == "encrypt") {
@@ -32,6 +33,13 @@ self.addEventListener('message', async function(e) {
         decryptedData: decryptedData
       });
     })
+  } else if(data.operation == "upload") {
+    RelayManager.get().uploadFile(data.outputFileName, data.itemParams, data.integration).then((metadata) => {
+      console.log("Upload worker complete");
+      self.postMessage({metadata});
+    }).catch((error) => {
+      console.log("Upload exception", error);
+    });
   }
 
 }, false);

@@ -3,11 +3,12 @@ import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import RelayManager from "./RelayManager";
 
+console.log("Hello");
+
 const ComponentKeyCredentialsKey = "ComponentKeyCredentialsKey";
 const ComponentKeyIntegrationsArrayKey = "ComponentKeyIntegrationsArrayKey";
 
 var EncryptionWorker = require("worker-loader?name=hash.worker.js!./encryptionWorker");
-var UploadWorker = require("worker-loader?name=hash.worker.js!./uploadWorker");
 
 const DefaultHeight = 135;
 
@@ -88,6 +89,7 @@ export default class BridgeManager {
   async loadOrCreateCredentials() {
     let credentials = this.getComponentData(ComponentKeyCredentialsKey);
     if(!credentials) {
+      console.error("GENERATING NEW CREDENTIA");
       let bits = 256;
       let identifer = await SFJS.crypto.generateRandomKey(bits);
       let password = await SFJS.crypto.generateRandomKey(bits);
@@ -280,30 +282,31 @@ export default class BridgeManager {
     var outputFileName = `${inputFileName}.sf.json`;
 
     return new Promise((resolve, reject) => {
-      const worker = new UploadWorker();
+      const worker = new EncryptionWorker();
 
-      worker.addEventListener("message", function (event) {
+      worker.addEventListener("message", (event) => {
         console.log("Upload worker complete", event.data);
+        var metadataItem = new SFItem({
+          content_type: BridgeManager.FileItemMetadataContentTypeKey,
+          content: {
+            serverMetadata: event.data.metadata,
+            fileName: inputFileName,
+            fileType: fileType
+          }
+        });
+
+        metadataItem.addItemAsRelationship(this.note);
+        this.saveItems([metadataItem]);
+        resolve();
       });
 
-      worker.postMessage({outputFileName, itemParams, integration});
+      var operation = "upload";
+      var params = {outputFileName, itemParams, integration, operation};
+
+      console.log("Sending params", params, "to worker", worker);
+
+      worker.postMessage(params);
     })
-
-    return RelayManager.get().uploadFile(outputFileName, itemParams, integration).then((metadata) => {
-      var metadataItem = new SFItem({
-        content_type: BridgeManager.FileItemMetadataContentTypeKey,
-        content: {
-          serverMetadata: metadata,
-          fileName: inputFileName,
-          fileType: fileType
-        }
-      });
-
-      metadataItem.addItemAsRelationship(this.note);
-      this.saveItems([metadataItem]);
-    }).catch((error) => {
-
-    });
   }
 
   async downloadFile(metadataItem) {

@@ -26,7 +26,7 @@ export default class RelayManager {
     let params = {
       file: {
         name: name,
-        item: item
+        item: item // base64 string of file
       },
       source: integration.source,
       authorization: integration.authorization
