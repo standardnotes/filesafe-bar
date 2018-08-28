@@ -26,18 +26,27 @@ self.addEventListener('message', async function(e) {
       });
     })
   } else if(data.operation == "decrypt") {
-    return SFJS.itemTransformer.decryptItem(data.item, data.keys).then(() => {
+    SFJS.itemTransformer.decryptItem(data.item, data.keys).then(() => {
       var decryptedItem = new SFItem(data.item);
       var decryptedData = decryptedItem.content.rawData;
-      self.postMessage({
-        decryptedData: decryptedData
-      });
+      if(decryptedItem.errorDecrypting) {
+        self.postMessage({error: {message: "Error decrypting."}});
+      } else {
+        self.postMessage({
+          decryptedData: decryptedData,
+          decryptedItem: decryptedItem
+        });
+      }
+    }).catch((error) => {
+      console.log("Decrypt catch", error);
+      self.postMessage({error: error});
     })
   } else if(data.operation == "upload") {
     RelayManager.get().uploadFile(data.outputFileName, data.itemParams, data.integration).then((metadata) => {
       console.log("Upload worker complete");
       self.postMessage({metadata});
     }).catch((error) => {
+      self.postMessage({error: error});
       console.log("Upload exception", error);
     });
   }

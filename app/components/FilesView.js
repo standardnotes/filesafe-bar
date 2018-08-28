@@ -106,7 +106,16 @@ export default class FilesView extends React.Component {
   }
 
   handleDroppedFiles = async (files) => {
+    const MegabyteLimit = 50;
+    const BytesInMegabyte = 1000000; // 50mb
+    const ByteLimit = MegabyteLimit * BytesInMegabyte;
+
     let file = files[0];
+
+    if(!file) {
+      // Can be the case if you're dragging some text or something
+      return;
+    }
 
     var reader = new FileReader();
     var decrypt = false;
@@ -114,9 +123,18 @@ export default class FilesView extends React.Component {
     reader.onload = async (e) => {
       var data = e.target.result;
       if(decrypt) {
-        this.decryptFile(data);
+        data = JSON.parse(data);
+        var item = data.items[0];
+        this.decryptDraggedFile(item);
       } else {
-        var string = await SFJS.crypto.arrayBufferToBase64(data);
+        var arrayBuffer = data;
+        var bytes = arrayBuffer.byteLength;
+        if(bytes > ByteLimit) {
+          alert(`The maximum upload size is ${MegabyteLimit} megabytes per file.`);
+          this.setState({status: null});
+          return;
+        }
+        var string = await SFJS.crypto.arrayBufferToBase64(arrayBuffer);
         this.encryptFile(string, file.name, file.type);
       }
     }
@@ -131,6 +149,18 @@ export default class FilesView extends React.Component {
     }
   }
 
+  decryptDraggedFile(item) {
+    this.setState({status: "Decrypting..."});
+
+    BridgeManager.get().decryptFile(item).then((data) => {
+      var item = data.decryptedItem;
+      this.downloadData(this.dataURItoBinary(data.decryptedData), item.content.fileName, item.content.fileType);
+      this.setState({status: null});
+    }).catch((decryptionError) => {
+      this.flashError("Error decrypting file.");
+    })
+  }
+
   async wait(seconds) {
     return new Promise((resolve, reject) => {
       setTimeout(function () {
@@ -141,15 +171,18 @@ export default class FilesView extends React.Component {
 
   async encryptFile(data, inputFileName, fileType) {
     this.setState({status: "Encrypting..."});
+
     BridgeManager.get().encryptFile(data, inputFileName, fileType).then(async (itemParams) => {
-      console.log("Encryption worker response received");
       this.setState({status: "Uploading..."});
       await this.wait(0.5);
+
       BridgeManager.get().uploadFile(itemParams, inputFileName, fileType).then(() => {
         this.setState({status: "Upload Success."});
         setTimeout(() => {
           this.setState({status: null});
         }, 2000);
+      }).catch((uploadError) => {
+        this.flashError("Error uploading file.");
       })
     })
   }
@@ -200,10 +233,21 @@ export default class FilesView extends React.Component {
     BridgeManager.get().downloadFile(metadata).then((item) => {
       this.setState({status: "Decrypting..."});
       BridgeManager.get().decryptFile(item).then((data) => {
-        this.downloadData(this.dataURItoBinary(data), metadata.content.fileName, metadata.content.fileType);
+        this.downloadData(this.dataURItoBinary(data.decryptedData), metadata.content.fileName, metadata.content.fileType);
         this.setState({status: null});
+      }).catch((decryptionError) => {
+        this.flashError("Error decrypting file.");
       })
+    }).catch((downloadError) => {
+      this.flashError("Error downloading file.");
     })
+  }
+
+  flashError(error) {
+    this.setState({status: error, statusClass: "danger"});
+    setTimeout(() => {
+      this.setState({status: null, statusClass: null});
+    }, 2500);
   }
 
   deleteFile = (metadata) => {
@@ -224,6 +268,9 @@ export default class FilesView extends React.Component {
       {label: "Type", key: "content_type", width: 100}
     ];
 
+    var statusClass = this.state.statusClass ? this.state.statusClass : "info";
+    var hasSpinner = statusClass == "info";
+
     return (
       <div className="sn-component" id="files-view">
 
@@ -232,8 +279,10 @@ export default class FilesView extends React.Component {
           <div className="files">
             {this.state.status &&
               <div id="file-status" className="horizontal-group">
-                <div className="spinner info small" />
-                <div className="info">{this.state.status}</div>
+                {hasSpinner &&
+                  <div className="spinner info small" />
+                }
+                <div className={statusClass}>{this.state.status}</div>
               </div>
             }
             <div id="add-file-button-container">

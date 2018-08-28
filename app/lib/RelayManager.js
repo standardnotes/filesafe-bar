@@ -42,7 +42,10 @@ export default class RelayManager {
         resolve(response.metadata);
       }, (errorResponse) => {
         var error = errorResponse.error;
-        console.log("Upload error response", errorResponse);
+        if(!error) {
+          error = {message: "File upload failed."};
+        }
+        console.log("Upload error response", error);
         reject(error);
       })
     });

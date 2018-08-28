@@ -89,7 +89,7 @@ export default class BridgeManager {
   async loadOrCreateCredentials() {
     let credentials = this.getComponentData(ComponentKeyCredentialsKey);
     if(!credentials) {
-      console.error("GENERATING NEW CREDENTIA");
+      console.error("GENERATING NEW CREDENTIAlS");
       let bits = 256;
       let identifer = await SFJS.crypto.generateRandomKey(bits);
       let password = await SFJS.crypto.generateRandomKey(bits);
@@ -286,6 +286,11 @@ export default class BridgeManager {
 
       worker.addEventListener("message", (event) => {
         console.log("Upload worker complete", event.data);
+        var data = event.data;
+        if(data.error) {
+          reject(data.error);
+          return;
+        }
         var metadataItem = new SFItem({
           content_type: BridgeManager.FileItemMetadataContentTypeKey,
           content: {
@@ -344,8 +349,13 @@ export default class BridgeManager {
       const worker = new EncryptionWorker();
 
       worker.addEventListener("message", function (event) {
-        // console.log("Decryptkion worker complete", event.data);
-        resolve(event.data.decryptedData);
+        var data = event.data;
+        if(data.error) {
+          reject(data.error);
+          return;
+        }
+
+        resolve(data);
       });
 
       worker.postMessage({
