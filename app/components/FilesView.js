@@ -1,9 +1,11 @@
 import React from 'react';
-import BridgeManager from "../lib/BridgeManager.js";
 import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFItemParams, SFItem } from 'standard-file-js';
-import { Base64 } from 'js-base64';
+
+import BridgeManager from "../lib/BridgeManager.js";
 import RelayManager from '../lib/RelayManager';
+import FileManager from '../lib/FileManager';
+import Utils from '../lib/Utils';
 
 export default class FilesView extends React.Component {
 
@@ -22,7 +24,7 @@ export default class FilesView extends React.Component {
   }
 
   reload() {
-    var files = BridgeManager.get().filesForCurrentNote();
+    var files = FileManager.get().filesForCurrentNote();
     this.setState({files: files});
   }
 
@@ -152,9 +154,9 @@ export default class FilesView extends React.Component {
   decryptDraggedFile(item) {
     this.setState({status: "Decrypting..."});
 
-    BridgeManager.get().decryptFile(item).then((data) => {
+    FileManager.get().decryptFile(item).then((data) => {
       var item = data.decryptedItem;
-      this.downloadData(this.dataURItoBinary(data.decryptedData), item.content.fileName, item.content.fileType);
+      Utils.downloadData(Utils.base64toBinary(data.decryptedData), item.content.fileName, item.content.fileType);
       this.setState({status: null});
     }).catch((decryptionError) => {
       this.flashError("Error decrypting file.");
@@ -172,11 +174,11 @@ export default class FilesView extends React.Component {
   async encryptFile(data, inputFileName, fileType) {
     this.setState({status: "Encrypting..."});
 
-    BridgeManager.get().encryptFile(data, inputFileName, fileType).then(async (itemParams) => {
+    FileManager.get().encryptFile(data, inputFileName, fileType).then(async (itemParams) => {
       this.setState({status: "Uploading..."});
       await this.wait(0.5);
 
-      BridgeManager.get().uploadFile(itemParams, inputFileName, fileType).then(() => {
+      FileManager.get().uploadFile(itemParams, inputFileName, fileType).then(() => {
         this.setState({status: "Upload Success."});
         setTimeout(() => {
           this.setState({status: null});
@@ -185,37 +187,6 @@ export default class FilesView extends React.Component {
         this.flashError("Error uploading file.");
       })
     })
-  }
-
-  dataURItoBinary(dataURI) {
-    var binary = atob(dataURI);
-    var array = [];
-    for(var i = 0; i < binary.length; i++) {
-      array.push(binary.charCodeAt(i));
-    }
-    return new Uint8Array(array);
-  }
-
-  downloadData(data, fileName, fileType) {
-    var link = document.createElement('a');
-    link.setAttribute('download', fileName);
-    link.href = this.hrefForData(data, fileType);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  }
-
-  hrefForData(data, fileType) {
-    // If we are replacing a previously generated file we need to
-    // manually revoke the object URL to avoid memory leaks.
-    if (this.textFile !== null) {
-      window.URL.revokeObjectURL(this.textFile);
-    }
-
-    this.textFile = window.URL.createObjectURL(new Blob([data], {type: fileType ? fileType : 'text/json'}));
-
-    // returns a URL you can use as a href
-    return this.textFile;
   }
 
   selectFile = (event, metadata) => {
@@ -230,15 +201,16 @@ export default class FilesView extends React.Component {
 
   downloadFile = (metadata) => {
     this.setState({status: "Downloading..."});
-    BridgeManager.get().downloadFile(metadata).then((item) => {
+    FileManager.get().downloadFile(metadata).then((item) => {
       this.setState({status: "Decrypting..."});
-      BridgeManager.get().decryptFile(item).then((data) => {
-        this.downloadData(this.dataURItoBinary(data.decryptedData), metadata.content.fileName, metadata.content.fileType);
+      FileManager.get().decryptFile(item).then((data) => {
+        Utils.downloadData(Utils.base64toBinary(data.decryptedData), metadata.content.fileName, metadata.content.fileType);
         this.setState({status: null});
       }).catch((decryptionError) => {
         this.flashError("Error decrypting file.");
       })
     }).catch((downloadError) => {
+      console.log("Error downloading file", downloadError);
       this.flashError("Error downloading file.");
     })
   }
@@ -251,7 +223,7 @@ export default class FilesView extends React.Component {
   }
 
   deleteFile = (metadata) => {
-    BridgeManager.get().deleteFile(metadata);
+    FileManager.get().deleteFile(metadata);
   }
 
   manageIntegrationsClicked = () => {

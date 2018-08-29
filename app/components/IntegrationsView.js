@@ -1,8 +1,9 @@
 import React from 'react';
-import BridgeManager from "../lib/BridgeManager.js";
 import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer } from 'standard-file-js';
+import BridgeManager from "../lib/BridgeManager.js";
 import RelayManager from "../lib/RelayManager";
+import IntegrationManager from "../lib/IntegrationManager";
 
 export default class IntegrationsView extends React.Component {
 
@@ -20,7 +21,7 @@ export default class IntegrationsView extends React.Component {
   }
 
   reloadIntegrations() {
-    let integrations = BridgeManager.get().getIntegrations();
+    let integrations = IntegrationManager.get().integrations;
     this.setState({
       integrations: integrations
     })
@@ -50,7 +51,7 @@ export default class IntegrationsView extends React.Component {
     if(!code || code.length == 0) {
       return;
     }
-    BridgeManager.get().saveIntegration(code);
+    IntegrationManager.get().saveIntegration(code);
     this.setState({integrationCode: null, showInputForm: false});
     this.reloadIntegrations();
   }
@@ -66,15 +67,30 @@ export default class IntegrationsView extends React.Component {
 
   deleteIntegration = (integration) => {
     if(confirm("Are you sure you want to delete this integration?")) {
-      BridgeManager.get().deleteIntegration(integration);
+      IntegrationManager.get().deleteIntegration(integration);
     }
   }
 
+  setIntegrationAsDefaultUploadSource = (integration) => {
+    IntegrationManager.get().setIntegrationAsDefault(integration);
+  }
+
   capitalizeFirstLetter(string) {
-      return string.charAt(0).toUpperCase() + string.slice(1);
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  displayStringForIntegration(integration) {
+    var comps = integration.source.split("_");
+    var result = "";
+    for(var comp of comps) {
+      result += this.capitalizeFirstLetter(comp) + " ";
+    }
+    return result;
   }
 
   render() {
+    var hasMultipleIntegrations = this.state.integrations.length > 1;
+
     return (
       <div>
         <div className="panel-row">
@@ -112,7 +128,15 @@ export default class IntegrationsView extends React.Component {
         <div>
           {this.state.integrations.map((integration) =>
             <div className="horizontal-group">
-              <p><strong>{this.capitalizeFirstLetter(integration.source)}</strong></p>
+              <p>
+                <span className={integration.isDefaultUploadSource ? "bold" : undefined}>{this.displayStringForIntegration(integration)}</span>
+                {integration.isDefaultUploadSource &&
+                  <span> (Default)</span>
+                }
+              </p>
+              {hasMultipleIntegrations && !integration.isDefaultUploadSource &&
+                <a className="info" onClick={() => {this.setIntegrationAsDefaultUploadSource(integration)}}>Make Default Upload Source</a>
+              }
               <a className="danger" onClick={() => {this.deleteIntegration(integration)}}>Delete</a>
             </div>
           )}

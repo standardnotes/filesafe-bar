@@ -58,7 +58,7 @@ export default class RelayManager {
       authorization: integration.authorization
     }
 
-    // console.log("Downloading file with params", params);
+    console.log("Downloading file with params", params);
 
     return new Promise((resolve, reject) => {
       this.httpManger.postAbsolute(url, params, (response) => {

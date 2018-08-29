@@ -3,14 +3,9 @@ import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import RelayManager from "./RelayManager";
 
-console.log("Hello");
-
 const ComponentKeyCredentialsKey = "ComponentKeyCredentialsKey";
-const ComponentKeyIntegrationsArrayKey = "ComponentKeyIntegrationsArrayKey";
 
-var EncryptionWorker = require("worker-loader?name=hash.worker.js!./encryptionWorker");
-
-const DefaultHeight = 135;
+const DefaultHeight = 235;
 
 export default class BridgeManager {
   static FileItemContentTypeKey = "SN|FileSafe|File";
@@ -24,7 +19,6 @@ export default class BridgeManager {
   }
 
   constructor(onReceieveItems) {
-
     this.updateObservers = [];
     this.items = [];
     this.size = null;
@@ -45,16 +39,33 @@ export default class BridgeManager {
       onReady && onReady();
 
       this.loadOrCreateCredentials().then((credentials) => {
-        console.log("Loaded credentials", credentials);
         this.authParams = credentials.authParams;
         this.keys = credentials.keys;
+        this.credentials = credentials;
       });
     });
 
-    // this.componentManager.acceptsThemes = false;
-
     this.componentManager.setSize("content", "90%", "90%");
     this.componentManager.setSize("container", "100%", DefaultHeight);
+  }
+
+  async loadOrCreateCredentials() {
+    let credentials = this.getComponentData(ComponentKeyCredentialsKey);
+    if(!credentials) {
+      let bits = 256;
+      let identifer = await SFJS.crypto.generateRandomKey(bits);
+      let password = await SFJS.crypto.generateRandomKey(bits);
+      let credentials = await SFJS.crypto.generateInitialKeysAndAuthParamsForUser(identifer, password);
+      credentials.createdAt = new Date();
+      this.setComponentData(ComponentKeyCredentialsKey, credentials);
+      return credentials;
+    } else {
+      return credentials;
+    }
+  }
+
+  getCredentials = () => {
+    return this.credentials;
   }
 
   toggleHeight() {
@@ -75,30 +86,13 @@ export default class BridgeManager {
     this.componentManager.setSize("container", "100%", DefaultHeight);
   }
 
-  setHeight(height) {
-  }
-
   setComponentData(key, value) {
     this.componentManager.setComponentDataValueForKey(key, value);
+    this.notifyObserversOfUpdate();
   }
 
   getComponentData(key) {
     return this.componentManager.componentDataValueForKey(key);
-  }
-
-  async loadOrCreateCredentials() {
-    let credentials = this.getComponentData(ComponentKeyCredentialsKey);
-    if(!credentials) {
-      console.error("GENERATING NEW CREDENTIAlS");
-      let bits = 256;
-      let identifer = await SFJS.crypto.generateRandomKey(bits);
-      let password = await SFJS.crypto.generateRandomKey(bits);
-      let credentials = await SFJS.crypto.generateInitialKeysAndAuthParamsForUser(identifer, password);
-      this.setComponentData(ComponentKeyCredentialsKey, credentials);
-      return credentials;
-    } else {
-      return credentials;
-    }
   }
 
   getItemAppDataValue(item, key) {
@@ -119,45 +113,6 @@ export default class BridgeManager {
         resolve(response);
       })
     })
-  }
-
-  getRawIntegrations() {
-    return this.getComponentData(ComponentKeyIntegrationsArrayKey) || [];
-  }
-
-  getIntegrations() {
-    var integrationStrings = this.getRawIntegrations();
-    var integrations = [];
-
-    for(var integrationBase64String of integrationStrings) {
-      // console.log("Attempting to decode string", integrationBase64String);
-      var jsonString = atob(integrationBase64String);
-      var integration = JSON.parse(jsonString);
-      integration.rawCode = integrationBase64String;
-      integrations.push(integration);
-    }
-    return integrations;
-  }
-
-  integrationForFile(metadata) {
-    return this.getIntegrations().find((integration) => {
-      console.log("integrationForFile", integration, metadata);
-      return metadata.content.serverMetadata && integration.source == metadata.content.serverMetadata.source;
-    });
-  }
-
-  saveIntegration(code) {
-    console.log("Saving integration", code);
-    let integrations = this.getRawIntegrations();
-    integrations.push(code);
-    this.setComponentData(ComponentKeyIntegrationsArrayKey, integrations);
-  }
-
-  deleteIntegration(integrationObject) {
-    let rawIntegrations = this.getRawIntegrations();
-    _.pull(rawIntegrations, integrationObject.rawCode);
-    this.setComponentData(ComponentKeyIntegrationsArrayKey, rawIntegrations);
-    this.notifyObserversOfUpdate();
   }
 
   categorizedItems() {
@@ -212,13 +167,6 @@ export default class BridgeManager {
     })
   }
 
-  // Returns the metadata objects associated with the current note
-  filesForCurrentNote() {
-    return this.items.filter((metadataItem) => {
-      return metadataItem.hasRelationshipWithItem(this.note);
-    })
-  }
-
   indexOfItem(item) {
     for(var index in this.items) {
       if(this.items[index].uuid == item.uuid) {
@@ -248,23 +196,8 @@ export default class BridgeManager {
     return -1;
   }
 
-  async deleteFile(metadataItem) {
-    return new Promise((resolve, reject) => {
-      this.componentManager.deleteItem(metadataItem, (response) => {
-        if(response.deleted) {
-          let integration = this.integrationForFile(metadataItem);
-          RelayManager.get().deleteFile(metadataItem, integration).then((relayResponse) => {
-            resolve();
-          })
-        } else {
-          resolve(response);
-        }
-      });
-    })
-  }
-
-  deleteItems(items) {
-    this.componentManager.deleteItems(items);
+  deleteItems(items, callback) {
+    this.componentManager.deleteItems(items, callback);
   }
 
   removeItemFromItems(item) {
@@ -276,94 +209,4 @@ export default class BridgeManager {
       observer.callback();
     }
   }
-
-  async uploadFile(itemParams, inputFileName, fileType) {
-    var integration = BridgeManager.get().getIntegrations()[0];
-    var outputFileName = `${inputFileName}.sf.json`;
-
-    return new Promise((resolve, reject) => {
-      const worker = new EncryptionWorker();
-
-      worker.addEventListener("message", (event) => {
-        console.log("Upload worker complete", event.data);
-        var data = event.data;
-        if(data.error) {
-          reject(data.error);
-          return;
-        }
-        var metadataItem = new SFItem({
-          content_type: BridgeManager.FileItemMetadataContentTypeKey,
-          content: {
-            serverMetadata: event.data.metadata,
-            fileName: inputFileName,
-            fileType: fileType
-          }
-        });
-
-        metadataItem.addItemAsRelationship(this.note);
-        this.saveItems([metadataItem]);
-        resolve();
-      });
-
-      var operation = "upload";
-      var params = {outputFileName, itemParams, integration, operation};
-
-      console.log("Sending params", params, "to worker", worker);
-
-      worker.postMessage(params);
-    })
-  }
-
-  async downloadFile(metadataItem) {
-    var integration = this.integrationForFile(metadataItem);
-    // console.log("Using integration for download", integration);
-    return RelayManager.get().downloadFile(metadataItem, integration).then((data) => {
-      var item = data.items[0];
-      return item;
-    })
-  }
-
-  async encryptFile(data, inputFileName, fileType) {
-    return new Promise((resolve, reject) => {
-      const worker = new EncryptionWorker();
-
-      worker.addEventListener("message", function (event) {
-        // console.log("Encryption worker complete", event.data);
-        resolve(event.data.itemParams);
-      });
-
-      worker.postMessage({
-        operation: "encrypt",
-        keys: BridgeManager.get().keys,
-        authParams: BridgeManager.get().authParams,
-        contentType: BridgeManager.FileItemContentTypeKey,
-        fileData: data,
-        fileName: inputFileName,
-        fileType: fileType
-      });
-    })
-  }
-
-  async decryptFile(item) {
-    return new Promise((resolve, reject) => {
-      const worker = new EncryptionWorker();
-
-      worker.addEventListener("message", function (event) {
-        var data = event.data;
-        if(data.error) {
-          reject(data.error);
-          return;
-        }
-
-        resolve(data);
-      });
-
-      worker.postMessage({
-        operation: "decrypt",
-        keys: BridgeManager.get().keys,
-        item: item
-      });
-    })
-  }
-
 }
