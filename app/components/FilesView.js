@@ -3,7 +3,6 @@ import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFItemParams, SFItem } from 'standard-file-js';
 
 import BridgeManager from "../lib/BridgeManager.js";
-import RelayManager from '../lib/RelayManager';
 import FileManager from '../lib/FileManager';
 import Utils from '../lib/Utils';
 

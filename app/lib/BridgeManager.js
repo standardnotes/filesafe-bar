@@ -3,12 +3,13 @@ import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import RelayManager from "./RelayManager";
 
-const ComponentKeyCredentialsKey = "ComponentKeyCredentialsKey";
+// const DefaultRelayServer = isDevelopmentEnv ? "http://localhost:3020" : "https://filesafe.standardnotes.org";
 
 const DefaultHeight = 235;
 
 export default class BridgeManager {
   static FileItemContentTypeKey = "SN|FileSafe|File";
+  static FileSafeCredentialsContentType = "SN|FileSafe|Credentials";
   static FileItemMetadataContentTypeKey = "SN|FileSafe|FileMetadata";
 
   /* Singleton */
@@ -37,12 +38,6 @@ export default class BridgeManager {
   initiateBridge(onReady) {
     this.componentManager = new ComponentManager([], () => {
       onReady && onReady();
-
-      this.loadOrCreateCredentials().then((credentials) => {
-        this.authParams = credentials.authParams;
-        this.keys = credentials.keys;
-        this.credentials = credentials;
-      });
     });
 
     this.componentManager.setSize("content", "90%", "90%");
@@ -50,18 +45,31 @@ export default class BridgeManager {
   }
 
   async loadOrCreateCredentials() {
-    let credentials = this.getComponentData(ComponentKeyCredentialsKey);
+    var searchResults = this.filterItems(BridgeManager.FileSafeCredentialsContentType);
+    let credentials = searchResults.length > 0 && searchResults[0];
     if(!credentials) {
       let bits = 256;
       let identifer = await SFJS.crypto.generateRandomKey(bits);
       let password = await SFJS.crypto.generateRandomKey(bits);
-      let credentials = await SFJS.crypto.generateInitialKeysAndAuthParamsForUser(identifer, password);
-      credentials.createdAt = new Date();
-      this.setComponentData(ComponentKeyCredentialsKey, credentials);
+      let credentialParams = await SFJS.crypto.generateInitialKeysAndAuthParamsForUser(identifer, password);
+      credentialParams.relayServerUrl = window.default_relay_server_url;
+
+      credentials = new SFItem({
+        content_type: BridgeManager.FileSafeCredentialsContentType,
+        content: credentialParams
+      });
+
+      this.saveItem(credentials);
       return credentials;
     } else {
       return credentials;
     }
+  }
+
+  setRelayUrl(url) {
+    var credentials = this.getCredentials();
+    credentials.content.relayServerUrl = url;
+    this.saveItem(credentials);
   }
 
   getCredentials = () => {
@@ -107,12 +115,26 @@ export default class BridgeManager {
     return this._didBeginStreaming;
   }
 
+  async saveItem(item) {
+    return this.saveItems([item]);
+  }
+
   async saveItems(items) {
     return new Promise((resolve, reject) => {
       this.componentManager.saveItems(items, (response) => {
         resolve(response);
       })
     })
+  }
+
+  filterItems(contentType) {
+    return this.items.filter((item) => {
+      return item.content_type == contentType;
+    })
+  }
+
+  getFileItems() {
+    return this.filterItems(BridgeManager.FileItemMetadataContentTypeKey);
   }
 
   categorizedItems() {
@@ -130,41 +152,59 @@ export default class BridgeManager {
 
   beginStreamingItem() {
     this._didBeginStreaming = true;
+
     this.componentManager.streamContextItem((note) => {
-      this.note = new SFItem(note);
-
       console.log("Received note", this.note);
-
-       // Only update UI on non-metadata updates.
-      if(this.note.isMetadataUpdate) {
-        return;
-      }
-
-      this.notifyObserversOfUpdate();
+      this.handleReceiveNoteMessage(note);
     });
 
-    this.componentManager.streamItems([BridgeManager.FileItemMetadataContentTypeKey], (items) => {
-      for(var item of items) {
-        item = new SFItem(item);
+    const contentTypes = [BridgeManager.FileItemMetadataContentTypeKey, BridgeManager.FileSafeCredentialsContentType];
+    this.componentManager.streamItems(contentTypes, (items) => {
+      this.handleStreamItemsMessage(items);
+    })
+  }
 
-        if(item.deleted) {
-          this.removeItemFromItems(item);
-          continue;
-        }
-        if(item.isMetadataUpdate) {
-          continue;
-        }
+  handleReceiveNoteMessage(note) {
+    this.note = new SFItem(note);
 
-        var index = this.indexOfItem(item);
-        if(index >= 0) {
-          this.items[index] = item;
-        } else {
-          this.items.push(item);
-        }
+     // Only update UI on non-metadata updates.
+    if(this.note.isMetadataUpdate) { return; }
+
+    this.notifyObserversOfUpdate();
+  }
+
+  handleStreamItemsMessage(items) {
+    for(var item of items) {
+      item = new SFItem(item);
+
+      if(item.deleted) {
+        this.removeItemFromItems(item);
+        continue;
       }
 
-      this.notifyObserversOfUpdate();
-    })
+      if(item.isMetadataUpdate) {
+        continue;
+      }
+
+      var index = this.indexOfItem(item);
+      if(index >= 0) {
+        this.items[index] = item;
+      } else {
+        this.items.push(item);
+      }
+    }
+
+    if(!this.credentials) {
+      this.loadOrCreateCredentials().then((credentials) => {
+        this.authParams = credentials.content.authParams;
+        this.keys = credentials.content.keys;
+        this.credentials = credentials;
+        RelayManager.get().setCredentials(credentials);
+        this.notifyObserversOfUpdate();
+      });
+    }
+
+    this.notifyObserversOfUpdate();
   }
 
   indexOfItem(item) {

@@ -19,7 +19,7 @@ export default class FileManager {
 
   // Returns the metadata objects associated with the current note
   filesForCurrentNote() {
-    return BridgeManager.get().items.filter((metadataItem) => {
+    return BridgeManager.get().getFileItems().filter((metadataItem) => {
       return metadataItem.hasRelationshipWithItem(BridgeManager.get().note);
     })
   }
@@ -70,7 +70,13 @@ export default class FileManager {
       });
 
       var operation = "upload";
-      var params = {outputFileName, itemParams, integration, operation};
+      var params = {
+        outputFileName: outputFileName,
+        itemParams: itemParams,
+        integration: integration,
+        operation: operation,
+        credentials: BridgeManager.get().getCredentials()
+      };
 
       console.log("Sending params", params, "to worker", worker);
 
@@ -79,6 +85,7 @@ export default class FileManager {
   }
 
   async downloadFile(metadataItem) {
+    // TODO: Use web worker for this as well?
     console.log("download metadata", metadataItem);
     var integration = IntegrationManager.get().integrationForFile(metadataItem);
     if(!integration) {

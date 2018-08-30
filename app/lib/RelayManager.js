@@ -11,18 +11,23 @@ export default class RelayManager {
   }
 
   constructor() {
+    console.log("Constructing Relay Instance");
     this.httpManger = new SFHttpManager();
     this.httpManger.setJWTRequestHandler(() => {});
-
-    this.relayServerUrl = "http://localhost:3020";
   }
 
-  getUrl() {
-    return this.relayServerUrl;
+  setCredentials(credentials) {
+    console.log("Relay Manager recevied creds", credentials);
+    this.credentials = credentials;
+  }
+
+  getRelayUrl() {
+    var credentials = this.credentials;
+    return credentials && credentials.content.relayServerUrl;
   }
 
   async uploadFile(name, item, integration) {
-    let url = `${this.relayServerUrl}/integrations/save-item`;
+    let url = `${this.getRelayUrl()}/integrations/save-item`;
     let params = {
       file: {
         name: name,
@@ -52,7 +57,7 @@ export default class RelayManager {
   }
 
   async downloadFile(metadataItem, integration) {
-    let url = `${this.relayServerUrl}/integrations/download-item`;
+    let url = `${this.getRelayUrl()}/integrations/download-item`;
     let params = {
       metadata: metadataItem.content.serverMetadata,
       authorization: integration.authorization
@@ -73,7 +78,7 @@ export default class RelayManager {
   }
 
   async deleteFile(metadataItem, integration) {
-    let url = `${this.relayServerUrl}/integrations/delete-item`;
+    let url = `${this.getRelayUrl()}/integrations/delete-item`;
     let params = {
       metadata: metadataItem.content.serverMetadata,
       authorization: integration.authorization

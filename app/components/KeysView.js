@@ -10,6 +10,7 @@ export default class KeysView extends React.Component {
 
   constructor(props) {
     super(props);
+
     this.state = {credentials: {}};
 
     BridgeManager.get().addUpdateObserver(() => {
@@ -20,13 +21,12 @@ export default class KeysView extends React.Component {
   exportCredentials = () => {
     var base64 = btoa(JSON.stringify(this.state.credentials, null, 2));
     var data = Utils.base64toBinary(base64);
-    Utils.downloadData(data, `sn-filesafe-keys-${this.state.credentials.createdAt.toISOString()}.json`, 'text/json');
+    Utils.downloadData(data, `sn-filesafe-keys-${this.state.credentials.created_at.toISOString()}.json`, 'text/json');
   }
 
   render() {
-
     var credentials = this.state.credentials;
-    var keysLabel = credentials.createdAt ? credentials.createdAt.toLocaleString() : "";
+    var keysLabel = (credentials && credentials.created_at) ? credentials.created_at.toLocaleString() : "";
 
     return (
       <div>

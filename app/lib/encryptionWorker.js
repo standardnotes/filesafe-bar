@@ -42,6 +42,7 @@ self.addEventListener('message', async function(e) {
       self.postMessage({error: error});
     })
   } else if(data.operation == "upload") {
+    RelayManager.get().setCredentials(data.credentials);
     RelayManager.get().uploadFile(data.outputFileName, data.itemParams, data.integration).then((metadata) => {
       console.log("Upload worker complete");
       self.postMessage({metadata});
