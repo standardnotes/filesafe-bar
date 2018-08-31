@@ -106,54 +106,69 @@ export default class FilesView extends React.Component {
     this.setState({rawData: null, decryptedItems: null, requestPassword: false});
   }
 
-  handleDroppedFiles = async (files) => {
+  async readFile(file) {
     const MegabyteLimit = 50;
     const BytesInMegabyte = 1000000; // 50mb
     const ByteLimit = MegabyteLimit * BytesInMegabyte;
 
-    let file = files[0];
+    return new Promise((resolve, reject) => {
+      console.log("Handling file", file);
 
-    if(!file) {
-      // Can be the case if you're dragging some text or something
-      return;
-    }
+      let reader = new FileReader();
+      let decrypt = false;
 
-    var reader = new FileReader();
-    var decrypt = false;
-
-    reader.onload = async (e) => {
-      var data = e.target.result;
-      if(decrypt) {
-        data = JSON.parse(data);
-        var item = data.items[0];
-        this.decryptDraggedFile(item);
-      } else {
-        var arrayBuffer = data;
-        var bytes = arrayBuffer.byteLength;
-        if(bytes > ByteLimit) {
-          alert(`The maximum upload size is ${MegabyteLimit} megabytes per file.`);
-          this.setState({status: null});
-          return;
+      reader.onload = async (e) => {
+        var data = e.target.result;
+        if(decrypt) {
+          data = JSON.parse(data);
+          var item = data.items[0];
+          this.decryptDraggedFile(item);
+          resolve();
+        } else {
+          var arrayBuffer = data;
+          var bytes = arrayBuffer.byteLength;
+          if(bytes > ByteLimit) {
+            alert(`The maximum upload size is ${MegabyteLimit} megabytes per file.`);
+            this.setState({status: null});
+            resolve();
+            return;
+          }
+          var string = await SFJS.crypto.arrayBufferToBase64(arrayBuffer);
+          await this.encryptFile(string, file.name, file.type);
+          resolve();
         }
-        var string = await SFJS.crypto.arrayBufferToBase64(arrayBuffer);
-        this.encryptFile(string, file.name, file.type);
       }
-    }
 
-    this.setState({status: "Reading file..."});
+      this.setState({status: "Reading file..."});
 
-    if(file.name.endsWith(".sf") || file.name.endsWith(".json")) {
-      decrypt = true;
-      reader.readAsText(file);
-    } else {
-      reader.readAsArrayBuffer(file);
-    }
+      if(file.name.endsWith(".sf") || file.name.endsWith(".json")) {
+        decrypt = true;
+        reader.readAsText(file);
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
+    })
   }
 
-  decryptDraggedFile(item) {
+  handleDroppedFiles = async (files) => {
+    for(let file of files) {
+      if(!file) {
+        // Can be the case if you're dragging some text or something
+        continue;
+      }
+
+      await this.readFile(file);
+    }
+
+    setTimeout(() => {
+      this.setState({status: null});
+    }, 2000);
+  }
+
+  async decryptDraggedFile(item) {
     this.setState({status: "Decrypting..."});
 
-    FileManager.get().decryptFile(item).then((data) => {
+    return FileManager.get().decryptFile(item).then((data) => {
       var item = data.decryptedItem;
       Utils.downloadData(Utils.base64toBinary(data.decryptedData), item.content.fileName, item.content.fileType);
       this.setState({status: null});
@@ -173,15 +188,12 @@ export default class FilesView extends React.Component {
   async encryptFile(data, inputFileName, fileType) {
     this.setState({status: "Encrypting..."});
 
-    FileManager.get().encryptFile(data, inputFileName, fileType).then(async (itemParams) => {
+    return FileManager.get().encryptFile(data, inputFileName, fileType).then(async (itemParams) => {
       this.setState({status: "Uploading..."});
       await this.wait(0.5);
 
-      FileManager.get().uploadFile(itemParams, inputFileName, fileType).then(() => {
+      return FileManager.get().uploadFile(itemParams, inputFileName, fileType).then(() => {
         this.setState({status: "Upload Success."});
-        setTimeout(() => {
-          this.setState({status: null});
-        }, 2000);
       }).catch((uploadError) => {
         this.flashError("Error uploading file.");
       })
@@ -198,11 +210,11 @@ export default class FilesView extends React.Component {
     }
   }
 
-  downloadFile = (metadata) => {
+  downloadFile = async (metadata) => {
     this.setState({status: "Downloading..."});
-    FileManager.get().downloadFile(metadata).then((item) => {
+    return FileManager.get().downloadFile(metadata).then((item) => {
       this.setState({status: "Decrypting..."});
-      FileManager.get().decryptFile(item).then((data) => {
+      return FileManager.get().decryptFile(item).then((data) => {
         Utils.downloadData(Utils.base64toBinary(data.decryptedData), metadata.content.fileName, metadata.content.fileType);
         this.setState({status: null});
       }).catch((decryptionError) => {
