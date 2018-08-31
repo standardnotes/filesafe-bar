@@ -154,7 +154,6 @@ export default class BridgeManager {
     this._didBeginStreaming = true;
 
     this.componentManager.streamContextItem((note) => {
-      console.log("Received note", this.note);
       this.handleReceiveNoteMessage(note);
     });
 

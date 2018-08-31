@@ -4,7 +4,6 @@ import { StandardFile, SFAbstractCrypto, SFCryptoWeb, SFItemTransformer, SFHttpM
 import RelayManager from "./RelayManager";
 
 self.addEventListener('message', async function(e) {
-  console.log("Encryption worker received message", e.data);
   var data = e.data;
 
   if(data.operation == "encrypt") {
@@ -19,7 +18,6 @@ self.addEventListener('message', async function(e) {
 
     var itemParamsObject = new SFItemParams(fileItem, data.keys, data.authParams);
     itemParamsObject.paramsForSync().then((itemParams) => {
-      console.log("Finished params for sync...");
       // Encryption complete
       self.postMessage({
         itemParams: itemParams
@@ -38,13 +36,12 @@ self.addEventListener('message', async function(e) {
         });
       }
     }).catch((error) => {
-      console.log("Decrypt catch", error);
+      console.log("Decryption error:", error);
       self.postMessage({error: error});
     })
   } else if(data.operation == "upload") {
     RelayManager.get().setCredentials(data.credentials);
     RelayManager.get().uploadFile(data.outputFileName, data.itemParams, data.integration).then((metadata) => {
-      console.log("Upload worker complete");
       self.postMessage({metadata});
     }).catch((error) => {
       self.postMessage({error: error});

@@ -49,7 +49,6 @@ export default class FileManager {
       const worker = new EncryptionWorker();
 
       worker.addEventListener("message", (event) => {
-        console.log("Upload worker complete", event.data);
         var data = event.data;
         if(data.error) {
           reject(data.error);
@@ -78,15 +77,12 @@ export default class FileManager {
         credentials: BridgeManager.get().getCredentials()
       };
 
-      console.log("Sending params", params, "to worker", worker);
-
       worker.postMessage(params);
     })
   }
 
   async downloadFile(metadataItem) {
     // TODO: Use web worker for this as well?
-    console.log("download metadata", metadataItem);
     var integration = IntegrationManager.get().integrationForFile(metadataItem);
     if(!integration) {
       var serverMetadata = metadataItem.content.serverMetadata;
@@ -109,7 +105,6 @@ export default class FileManager {
       const worker = new EncryptionWorker();
 
       worker.addEventListener("message", function (event) {
-        // console.log("Encryption worker complete", event.data);
         resolve(event.data.itemParams);
       });
 

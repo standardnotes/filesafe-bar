@@ -11,13 +11,11 @@ export default class RelayManager {
   }
 
   constructor() {
-    console.log("Constructing Relay Instance");
     this.httpManger = new SFHttpManager();
     this.httpManger.setJWTRequestHandler(() => {});
   }
 
   setCredentials(credentials) {
-    console.log("Relay Manager recevied creds", credentials);
     this.credentials = credentials;
   }
 
@@ -37,13 +35,8 @@ export default class RelayManager {
       authorization: integration.authorization
     }
 
-    console.log("Beginning relay upload");
-
-    // console.log("Uploading params to relay server", params);
-
     return new Promise((resolve, reject) => {
       this.httpManger.postAbsolute(url, params, (response) => {
-        // console.log("Upload success response", response);
         resolve(response.metadata);
       }, (errorResponse) => {
         var error = errorResponse.error;
@@ -63,11 +56,8 @@ export default class RelayManager {
       authorization: integration.authorization
     }
 
-    console.log("Downloading file with params", params);
-
     return new Promise((resolve, reject) => {
       this.httpManger.postAbsolute(url, params, (response) => {
-        // console.log("Download success response", response);
         resolve(response);
       }, (errorResponse) => {
         var error = errorResponse.error;
@@ -84,11 +74,8 @@ export default class RelayManager {
       authorization: integration.authorization
     }
 
-    // console.log("Deleting file with params", params);
-
     return new Promise((resolve, reject) => {
       this.httpManger.postAbsolute(url, params, (response) => {
-        // console.log("Download success response", response);
         resolve(response);
       }, (errorResponse) => {
         var error = errorResponse.error;

@@ -16,8 +16,8 @@ export default class IntegrationManager {
     return BridgeManager.get().getComponentData(ComponentKeyIntegrationsArrayKey) || [];
   }
 
-  saveIntegrations() {
-    BridgeManager.get().setComponentData(ComponentKeyIntegrationsArrayKey, this.integrations);
+  saveIntegrations(integrations) {
+    BridgeManager.get().setComponentData(ComponentKeyIntegrationsArrayKey, integrations || this.integrations);
   }
 
   integrationForFile(metadata) {
@@ -42,7 +42,8 @@ export default class IntegrationManager {
     }
 
     integrations.push(integration);
-    this.saveIntegrations();
+
+    this.saveIntegrations(integrations);
   }
 
   getDefaultUploadSource() {

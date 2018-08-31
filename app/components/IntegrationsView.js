@@ -114,11 +114,11 @@ export default class IntegrationsView extends React.Component {
                 onKeyPress={this.handleKeyPress}
               />
               <div className="button-group" style={{marginTop: 10}}>
-                <div className="button default">
-                  <a className="" onClick={this.cancelIntegrationForm}>Cancel</a>
+                <div className="button default" onClick={this.cancelIntegrationForm}>
+                  <a className="">Cancel</a>
                 </div>
-                <div className="button info">
-                  <a className="info label" onClick={this.submitIntegrationCode}>Submit</a>
+                <div className="button info" onClick={this.submitIntegrationCode}>
+                  <a className="info label">Submit</a>
                 </div>
               </div>
             </div>
