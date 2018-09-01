@@ -23,7 +23,7 @@ export default class IntegrationsView extends React.Component {
   reloadIntegrations() {
     let integrations = IntegrationManager.get().integrations;
     this.setState({
-      integrations: integrations
+      integrations: integrations || []
     })
   }
 
@@ -51,6 +51,7 @@ export default class IntegrationsView extends React.Component {
     if(!code || code.length == 0) {
       return;
     }
+    console.log("Saving integration code", code);
     IntegrationManager.get().saveIntegration(code);
     this.setState({integrationCode: null, showInputForm: false});
     this.reloadIntegrations();

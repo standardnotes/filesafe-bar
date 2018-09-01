@@ -1,7 +1,6 @@
 import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import BridgeManager from "./BridgeManager";
-const ComponentKeyIntegrationsArrayKey = "ComponentKeyIntegrationsArrayKey";
 
 export default class IntegrationManager {
 
@@ -13,11 +12,18 @@ export default class IntegrationManager {
   }
 
   get integrations() {
-    return BridgeManager.get().getComponentData(ComponentKeyIntegrationsArrayKey) || [];
+    var creds = BridgeManager.get().getCredentials();
+    if(creds) {
+      if(!creds.content.integrations) {
+        creds.content.integrations = [];
+      }
+      return creds.content.integrations;
+    }
+    return null;
   }
 
-  saveIntegrations(integrations) {
-    BridgeManager.get().setComponentData(ComponentKeyIntegrationsArrayKey, integrations || this.integrations);
+  saveIntegrations() {
+    BridgeManager.get().saveCredentials();
   }
 
   integrationForFile(metadata) {
@@ -42,8 +48,7 @@ export default class IntegrationManager {
     }
 
     integrations.push(integration);
-
-    this.saveIntegrations(integrations);
+    this.saveIntegrations();
   }
 
   getDefaultUploadSource() {

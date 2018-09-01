@@ -66,14 +66,18 @@ export default class BridgeManager {
     }
   }
 
+  getCredentials = () => {
+    return this.credentials;
+  }
+
+  saveCredentials() {
+    this.saveItem(this.getCredentials());
+  }
+
   setRelayUrl(url) {
     var credentials = this.getCredentials();
     credentials.content.relayServerUrl = url;
     this.saveItem(credentials);
-  }
-
-  getCredentials = () => {
-    return this.credentials;
   }
 
   toggleHeight() {
