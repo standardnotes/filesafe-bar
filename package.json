@@ -1,6 +1,6 @@
 {
   "name": "sn-filesafe",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/dist.js",
   "scripts": {
     "lint": "eslint --cache --ignore-path .gitignore --ext .jsx,.js --format=node_modules/eslint-formatter-pretty .",
@@ -49,10 +49,7 @@
     "validate-commit-msg": "2.x",
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.7",
-    "worker-loader": "^2.0.0"
-  },
-  "dependencies": {
-    "js-base64": "^2.4.5",
+    "worker-loader": "^2.0.0",
     "lodash": "^4.17.10"
   }
 }
