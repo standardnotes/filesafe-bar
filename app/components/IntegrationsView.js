@@ -97,7 +97,9 @@ export default class IntegrationsView extends React.Component {
         <div className="panel-row">
           <h4>Integrations ({this.state.integrations.length})</h4>
           {!this.state.showInputForm &&
-            <a className="info label" onClick={this.addNewIntegrationClicked}>Add New</a>
+            <div className="button info no-border" onClick={this.addNewIntegrationClicked}>
+              <div className="info label">Add New</div>
+            </div>
           }
         </div>
 

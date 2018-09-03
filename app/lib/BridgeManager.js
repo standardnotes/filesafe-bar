@@ -5,7 +5,7 @@ import RelayManager from "./RelayManager";
 
 // const DefaultRelayServer = isDevelopmentEnv ? "http://localhost:3020" : "https://filesafe.standardnotes.org";
 
-const DefaultHeight = 235;
+const DefaultHeight = 75;
 
 export default class BridgeManager {
   static FileItemContentTypeKey = "SN|FileSafe|File";
@@ -90,7 +90,7 @@ export default class BridgeManager {
 
   setHeightExpanded() {
     this.expanded = true;
-    this.componentManager.setSize("container", "100%", 200);
+    this.componentManager.setSize("container", "100%", 500);
   }
 
   setHeightCollapsed() {

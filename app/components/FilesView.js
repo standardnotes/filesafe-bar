@@ -238,6 +238,7 @@ export default class FilesView extends React.Component {
   }
 
   manageIntegrationsClicked = () => {
+    this.setState({expanded: !this.state.expanded});
     BridgeManager.get().toggleHeight();
   }
 
@@ -301,7 +302,7 @@ export default class FilesView extends React.Component {
           </div>
 
           <div className="button default no-border" onClick={this.manageIntegrationsClicked}>
-            <div className="label">Settings</div>
+            <div className="label">{this.state.expanded ? "Collapse" : "Expand"}</div>
           </div>
 
         </div>
