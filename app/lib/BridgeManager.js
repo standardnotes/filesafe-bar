@@ -3,8 +3,6 @@ import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import RelayManager from "./RelayManager";
 
-// const DefaultRelayServer = isDevelopmentEnv ? "http://localhost:3020" : "https://filesafe.standardnotes.org";
-
 const DefaultHeight = 75;
 
 export default class BridgeManager {

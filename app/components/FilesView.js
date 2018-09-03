@@ -112,8 +112,6 @@ export default class FilesView extends React.Component {
     const ByteLimit = MegabyteLimit * BytesInMegabyte;
 
     return new Promise((resolve, reject) => {
-      console.log("Handling file", file);
-
       let reader = new FileReader();
       let decrypt = false;
 

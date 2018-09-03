@@ -4,7 +4,8 @@ import RelayManager from "./RelayManager";
 import BridgeManager from "./BridgeManager";
 import IntegrationManager from "./IntegrationManager";
 
-const EncryptionWorker = require("worker-loader?name=hash.worker.js!./encryptionWorker");
+// const EncryptionWorker = require("worker-loader?name=hash.worker.js!./encryption.worker");
+import EncryptionWorker from './encryption.worker.js';
 
 export default class FileManager {
   static FileItemContentTypeKey = "SN|FileSafe|File";
