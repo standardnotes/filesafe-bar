@@ -394,6 +394,7 @@ var BridgeManager = function () {
       });
 
       var contentTypes = [BridgeManager.FileItemMetadataContentTypeKey, BridgeManager.FileSafeCredentialsContentType];
+
       this.componentManager.streamItems(contentTypes, function (items) {
         _this3.handleStreamItemsMessage(items);
       });
@@ -9532,48 +9533,6 @@ exports.default = RelayManager;
 "use strict";
 
 
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- */
-
-function makeEmptyFunction(arg) {
-  return function () {
-    return arg;
-  };
-}
-
-/**
- * This function accepts and discards inputs; it has no side effects. This is
- * primarily useful idiomatically for overridable function endpoints which
- * always need to be callable, since JS lacks a null-call idiom ala Cocoa.
- */
-var emptyFunction = function emptyFunction() {};
-
-emptyFunction.thatReturns = makeEmptyFunction;
-emptyFunction.thatReturnsFalse = makeEmptyFunction(false);
-emptyFunction.thatReturnsTrue = makeEmptyFunction(true);
-emptyFunction.thatReturnsNull = makeEmptyFunction(null);
-emptyFunction.thatReturnsThis = function () {
-  return this;
-};
-emptyFunction.thatReturnsArgument = function (arg) {
-  return arg;
-};
-
-module.exports = emptyFunction;
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -9685,6 +9644,48 @@ var IntegrationManager = function () {
 
 IntegrationManager.instance = null;
 exports.default = IntegrationManager;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/**
+ * Copyright (c) 2013-present, Facebook, Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * 
+ */
+
+function makeEmptyFunction(arg) {
+  return function () {
+    return arg;
+  };
+}
+
+/**
+ * This function accepts and discards inputs; it has no side effects. This is
+ * primarily useful idiomatically for overridable function endpoints which
+ * always need to be callable, since JS lacks a null-call idiom ala Cocoa.
+ */
+var emptyFunction = function emptyFunction() {};
+
+emptyFunction.thatReturns = makeEmptyFunction;
+emptyFunction.thatReturnsFalse = makeEmptyFunction(false);
+emptyFunction.thatReturnsTrue = makeEmptyFunction(true);
+emptyFunction.thatReturnsNull = makeEmptyFunction(null);
+emptyFunction.thatReturnsThis = function () {
+  return this;
+};
+emptyFunction.thatReturnsArgument = function (arg) {
+  return arg;
+};
+
+module.exports = emptyFunction;
 
 /***/ }),
 /* 7 */
@@ -9983,7 +9984,7 @@ if (!Array.prototype.includes) {
  * LICENSE file in the root directory of this source tree.
  */
 
-var m=__webpack_require__(7),n=__webpack_require__(8),p=__webpack_require__(5),q="function"===typeof Symbol&&Symbol["for"],r=q?Symbol["for"]("react.element"):60103,t=q?Symbol["for"]("react.call"):60104,u=q?Symbol["for"]("react.return"):60105,v=q?Symbol["for"]("react.portal"):60106,w=q?Symbol["for"]("react.fragment"):60107,x="function"===typeof Symbol&&Symbol.iterator;
+var m=__webpack_require__(7),n=__webpack_require__(8),p=__webpack_require__(6),q="function"===typeof Symbol&&Symbol["for"],r=q?Symbol["for"]("react.element"):60103,t=q?Symbol["for"]("react.call"):60104,u=q?Symbol["for"]("react.return"):60105,v=q?Symbol["for"]("react.portal"):60106,w=q?Symbol["for"]("react.fragment"):60107,x="function"===typeof Symbol&&Symbol.iterator;
 function y(a){for(var b=arguments.length-1,e="Minified React error #"+a+"; visit http://facebook.github.io/react/docs/error-decoder.html?invariant\x3d"+a,c=0;c<b;c++)e+="\x26args[]\x3d"+encodeURIComponent(arguments[c+1]);b=Error(e+" for the full message or use the non-minified dev environment for full errors and additional helpful warnings.");b.name="Invariant Violation";b.framesToPop=1;throw b;}
 var z={isMounted:function(){return!1},enqueueForceUpdate:function(){},enqueueReplaceState:function(){},enqueueSetState:function(){}};function A(a,b,e){this.props=a;this.context=b;this.refs=n;this.updater=e||z}A.prototype.isReactComponent={};A.prototype.setState=function(a,b){"object"!==typeof a&&"function"!==typeof a&&null!=a?y("85"):void 0;this.updater.enqueueSetState(this,a,b,"setState")};A.prototype.forceUpdate=function(a){this.updater.enqueueForceUpdate(this,a,"forceUpdate")};
 function B(a,b,e){this.props=a;this.context=b;this.refs=n;this.updater=e||z}function C(){}C.prototype=A.prototype;var D=B.prototype=new C;D.constructor=B;m(D,A.prototype);D.isPureReactComponent=!0;function E(a,b,e){this.props=a;this.context=b;this.refs=n;this.updater=e||z}var F=E.prototype=new C;F.constructor=E;m(F,A.prototype);F.unstable_isAsyncReactComponent=!0;F.render=function(){return this.props.children};var G={current:null},H=Object.prototype.hasOwnProperty,I={key:!0,ref:!0,__self:!0,__source:!0};
@@ -10059,7 +10060,7 @@ if (true) {
 /*
  Modernizr 3.0.0pre (Custom Build) | MIT
 */
-var aa=__webpack_require__(0),l=__webpack_require__(15),B=__webpack_require__(7),C=__webpack_require__(5),ba=__webpack_require__(16),da=__webpack_require__(17),ea=__webpack_require__(18),fa=__webpack_require__(19),ia=__webpack_require__(22),D=__webpack_require__(8);
+var aa=__webpack_require__(0),l=__webpack_require__(15),B=__webpack_require__(7),C=__webpack_require__(6),ba=__webpack_require__(16),da=__webpack_require__(17),ea=__webpack_require__(18),fa=__webpack_require__(19),ia=__webpack_require__(22),D=__webpack_require__(8);
 function E(a){for(var b=arguments.length-1,c="Minified React error #"+a+"; visit http://facebook.github.io/react/docs/error-decoder.html?invariant\x3d"+a,d=0;d<b;d++)c+="\x26args[]\x3d"+encodeURIComponent(arguments[d+1]);b=Error(c+" for the full message or use the non-minified dev environment for full errors and additional helpful warnings.");b.name="Invariant Violation";b.framesToPop=1;throw b;}aa?void 0:E("227");
 var oa={children:!0,dangerouslySetInnerHTML:!0,defaultValue:!0,defaultChecked:!0,innerHTML:!0,suppressContentEditableWarning:!0,suppressHydrationWarning:!0,style:!0};function pa(a,b){return(a&b)===b}
 var ta={MUST_USE_PROPERTY:1,HAS_BOOLEAN_VALUE:4,HAS_NUMERIC_VALUE:8,HAS_POSITIVE_NUMERIC_VALUE:24,HAS_OVERLOADED_BOOLEAN_VALUE:32,HAS_STRING_BOOLEAN_VALUE:64,injectDOMPropertyConfig:function(a){var b=ta,c=a.Properties||{},d=a.DOMAttributeNamespaces||{},e=a.DOMAttributeNames||{};a=a.DOMMutationMethods||{};for(var f in c){ua.hasOwnProperty(f)?E("48",f):void 0;var g=f.toLowerCase(),h=c[f];g={attributeName:g,attributeNamespace:null,propertyName:f,mutationMethod:null,mustUseProperty:pa(h,b.MUST_USE_PROPERTY),
@@ -10333,7 +10334,7 @@ module.exports = ExecutionEnvironment;
  * @typechecks
  */
 
-var emptyFunction = __webpack_require__(5);
+var emptyFunction = __webpack_require__(6);
 
 /**
  * Upstream version of event listener. Does not take into account specific
@@ -11327,6 +11328,10 @@ var _FileManager = __webpack_require__(27);
 
 var _FileManager2 = _interopRequireDefault(_FileManager);
 
+var _IntegrationManager = __webpack_require__(5);
+
+var _IntegrationManager2 = _interopRequireDefault(_IntegrationManager);
+
 var _Utils = __webpack_require__(10);
 
 var _Utils2 = _interopRequireDefault(_Utils);
@@ -11359,82 +11364,91 @@ var FilesView = function (_React$Component) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
+                if (!(_IntegrationManager2.default.get().integrations.length == 0)) {
+                  _context.next = 3;
+                  break;
+                }
+
+                alert("Please set up at least one integration before attempting to upload a file. To do this, press Expand, and select Add New in the Integrations section.");
+                return _context.abrupt('return');
+
+              case 3:
                 _iteratorNormalCompletion = true;
                 _didIteratorError = false;
                 _iteratorError = undefined;
-                _context.prev = 3;
+                _context.prev = 6;
                 _iterator = files[Symbol.iterator]();
 
-              case 5:
+              case 8:
                 if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                  _context.next = 14;
+                  _context.next = 17;
                   break;
                 }
 
                 file = _step.value;
 
                 if (file) {
-                  _context.next = 9;
+                  _context.next = 12;
                   break;
                 }
 
-                return _context.abrupt('continue', 11);
+                return _context.abrupt('continue', 14);
 
-              case 9:
-                _context.next = 11;
+              case 12:
+                _context.next = 14;
                 return _this.readFile(file);
 
-              case 11:
-                _iteratorNormalCompletion = true;
-                _context.next = 5;
-                break;
-
               case 14:
-                _context.next = 20;
+                _iteratorNormalCompletion = true;
+                _context.next = 8;
                 break;
 
-              case 16:
-                _context.prev = 16;
-                _context.t0 = _context['catch'](3);
+              case 17:
+                _context.next = 23;
+                break;
+
+              case 19:
+                _context.prev = 19;
+                _context.t0 = _context['catch'](6);
                 _didIteratorError = true;
                 _iteratorError = _context.t0;
 
-              case 20:
-                _context.prev = 20;
-                _context.prev = 21;
+              case 23:
+                _context.prev = 23;
+                _context.prev = 24;
 
                 if (!_iteratorNormalCompletion && _iterator.return) {
                   _iterator.return();
                 }
 
-              case 23:
-                _context.prev = 23;
+              case 26:
+                _context.prev = 26;
 
                 if (!_didIteratorError) {
-                  _context.next = 26;
+                  _context.next = 29;
                   break;
                 }
 
                 throw _iteratorError;
 
-              case 26:
+              case 29:
+                return _context.finish(26);
+
+              case 30:
                 return _context.finish(23);
 
-              case 27:
-                return _context.finish(20);
-
-              case 28:
+              case 31:
 
                 setTimeout(function () {
                   _this.setState({ status: null });
                 }, 2000);
 
-              case 29:
+              case 32:
               case 'end':
                 return _context.stop();
             }
           }
-        }, _callee, _this2, [[3, 16, 20, 28], [21,, 23, 27]]);
+        }, _callee, _this2, [[6, 19, 23, 31], [24,, 26, 30]]);
       }));
 
       return function (_x) {
@@ -11498,7 +11512,9 @@ var FilesView = function (_React$Component) {
       return _this.state.selectedFile == metadata;
     };
 
-    _this.state = { files: [] };
+    _this.state = {
+      files: []
+    };
 
     _BridgeManager2.default.get().initiateBridge(function () {
       _BridgeManager2.default.get().beginStreamingItem();
@@ -11972,7 +11988,7 @@ var _BridgeManager = __webpack_require__(1);
 
 var _BridgeManager2 = _interopRequireDefault(_BridgeManager);
 
-var _IntegrationManager = __webpack_require__(6);
+var _IntegrationManager = __webpack_require__(5);
 
 var _IntegrationManager2 = _interopRequireDefault(_IntegrationManager);
 
@@ -12327,7 +12343,7 @@ var _RelayManager = __webpack_require__(4);
 
 var _RelayManager2 = _interopRequireDefault(_RelayManager);
 
-var _IntegrationManager = __webpack_require__(6);
+var _IntegrationManager = __webpack_require__(5);
 
 var _IntegrationManager2 = _interopRequireDefault(_IntegrationManager);
 
@@ -12609,7 +12625,7 @@ var _Utils = __webpack_require__(10);
 
 var _Utils2 = _interopRequireDefault(_Utils);
 
-var _IntegrationManager = __webpack_require__(6);
+var _IntegrationManager = __webpack_require__(5);
 
 var _IntegrationManager2 = _interopRequireDefault(_IntegrationManager);
 

@@ -160,6 +160,7 @@ export default class BridgeManager {
     });
 
     const contentTypes = [BridgeManager.FileItemMetadataContentTypeKey, BridgeManager.FileSafeCredentialsContentType];
+
     this.componentManager.streamItems(contentTypes, (items) => {
       this.handleStreamItemsMessage(items);
     })

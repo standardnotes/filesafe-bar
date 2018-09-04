@@ -4,6 +4,7 @@ import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFItemParams, SFItem
 
 import BridgeManager from "../lib/BridgeManager.js";
 import FileManager from '../lib/FileManager';
+import IntegrationManager from '../lib/IntegrationManager';
 import Utils from '../lib/Utils';
 
 export default class FilesView extends React.Component {
@@ -11,7 +12,9 @@ export default class FilesView extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {files: []};
+    this.state = {
+      files: []
+    };
 
     BridgeManager.get().initiateBridge(() => {
       BridgeManager.get().beginStreamingItem();
@@ -149,6 +152,11 @@ export default class FilesView extends React.Component {
   }
 
   handleDroppedFiles = async (files) => {
+    if(IntegrationManager.get().integrations.length == 0) {
+      alert("Please set up at least one integration before attempting to upload a file. To do this, press Expand, and select Add New in the Integrations section.");
+      return;
+    }
+
     for(let file of files) {
       if(!file) {
         // Can be the case if you're dragging some text or something
