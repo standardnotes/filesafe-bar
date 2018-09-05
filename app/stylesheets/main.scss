@@ -23,10 +23,14 @@ body {
  .panel .content {
    padding-top: 6px !important;
 
+   // p:not(.body-text-color) {
+   //   color: black;
+   // }
+
    p {
-     color: black;
+     color: inherit;
    }
- }
+  }
 
   .button-group .button {
     vertical-align: middle;

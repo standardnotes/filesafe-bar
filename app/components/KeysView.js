@@ -35,8 +35,8 @@ export default class KeysView extends React.Component {
         </div>
 
         <div>
-          <div className="horizontal-group">
-            <p>{keysLabel}</p>
+          <div className="horizontal-group body-text-color">
+            <p className="body-text-color">{keysLabel}</p>
             <a className="info" onClick={this.exportCredentials}>Export</a>
           </div>
         </div>

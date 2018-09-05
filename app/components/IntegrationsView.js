@@ -130,11 +130,11 @@ export default class IntegrationsView extends React.Component {
 
         <div>
           {this.state.integrations.map((integration) =>
-            <div className="horizontal-group">
-              <p>
-                <span className={integration.isDefaultUploadSource ? "bold" : undefined}>{this.displayStringForIntegration(integration)}</span>
+            <div className="horizontal-group body-text-color">
+              <p className="body-text-color">
+                <span className={"body-text-color " + (integration.isDefaultUploadSource ? "bold" : undefined)}>{this.displayStringForIntegration(integration)}</span>
                 {integration.isDefaultUploadSource &&
-                  <span> (Default)</span>
+                  <span className="body-text-color"> (Default)</span>
                 }
               </p>
               {hasMultipleIntegrations && !integration.isDefaultUploadSource &&
