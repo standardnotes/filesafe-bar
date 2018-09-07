@@ -13,7 +13,8 @@ export default class FilesView extends React.Component {
     super(props);
 
     this.state = {
-      files: []
+      files: [],
+      hasCredentials: true
     };
 
     BridgeManager.get().initiateBridge(() => {
@@ -27,7 +28,7 @@ export default class FilesView extends React.Component {
 
   reload() {
     var files = FileManager.get().filesForCurrentNote();
-    this.setState({files: files});
+    this.setState({files: files, hasCredentials: BridgeManager.get().getCredentials() != null});
   }
 
   componentDidMount() {
@@ -264,7 +265,13 @@ export default class FilesView extends React.Component {
     return (
       <div className="sn-component" id="files-view">
 
+        {!this.state.hasCredentials &&
+          <div className="notification danger">
+            <div className="text">FileSafe credentials not loaded. Please refresh the app to retrieve valid credentials.</div>
+          </div>
+        }
         <div className="panel-row align-top">
+
 
           <div className="files">
             {this.state.status &&

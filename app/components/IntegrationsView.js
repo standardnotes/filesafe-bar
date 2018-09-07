@@ -9,13 +9,13 @@ export default class IntegrationsView extends React.Component {
 
   constructor(props) {
     super(props);
+
     this.state = {
       integrations: []
     };
 
     BridgeManager.get().addUpdateObserver(() => {
       this.reloadIntegrations();
-
       this.setState({relayServerUrl: RelayManager.get().getRelayUrl()});
     })
   }
@@ -51,7 +51,7 @@ export default class IntegrationsView extends React.Component {
     if(!code || code.length == 0) {
       return;
     }
-    console.log("Saving integration code", code);
+
     IntegrationManager.get().saveIntegration(code);
     this.setState({integrationCode: null, showInputForm: false});
     this.reloadIntegrations();

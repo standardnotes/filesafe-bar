@@ -44,6 +44,23 @@ export default class BridgeManager {
 
   async loadOrCreateCredentials() {
     var searchResults = this.filterItems(BridgeManager.FileSafeCredentialsContentType);
+    if(searchResults.length > 1) {
+      this.componentManager.sendCustomEvent(
+        "present-conflict-resolution",
+        {item_ids: searchResults.map((item) => {return item.uuid})},
+        () => {
+          setTimeout(() => {
+            var newResults = this.filterItems(BridgeManager.FileSafeCredentialsContentType);
+            if(newResults.length > 1) {
+              alert("Two copies of credentials exist for FileSafe. For proper functioning, please ensure only one instance exists.")
+              return this.loadOrCreateCredentials();
+            }
+          }, 2000);
+        }
+      );
+
+      return;
+    }
     let credentials = searchResults.length > 0 && searchResults[0];
     if(!credentials) {
       let bits = 256;
@@ -198,6 +215,9 @@ export default class BridgeManager {
 
     if(!this.credentials) {
       this.loadOrCreateCredentials().then((credentials) => {
+        if(!credentials) {
+          return;
+        }
         this.authParams = credentials.content.authParams;
         this.keys = credentials.content.keys;
         this.credentials = credentials;
