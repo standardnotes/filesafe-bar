@@ -38,7 +38,6 @@ export default class BridgeManager {
       onReady && onReady();
     });
 
-    this.componentManager.setSize("content", "90%", "90%");
     this.componentManager.setSize("container", "100%", DefaultHeight);
   }
 
@@ -61,6 +60,7 @@ export default class BridgeManager {
 
       return;
     }
+
     let credentials = searchResults.length > 0 && searchResults[0];
     if(!credentials) {
       let bits = 256;

@@ -770,7 +770,7 @@ body.highlight {
   .sn-component .panel .content {
     padding-top: 6px !important; }
     .sn-component .panel .content p {
-      color: black; }
+      color: inherit; }
   .sn-component .button-group .button {
     vertical-align: middle; }
   .sn-component .button.no-border {
