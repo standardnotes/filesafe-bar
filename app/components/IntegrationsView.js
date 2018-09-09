@@ -14,7 +14,7 @@ export default class IntegrationsView extends React.Component {
       integrations: []
     };
 
-    BridgeManager.get().addUpdateObserver(() => {
+    BridgeManager.get().addEventHandler((event) => {
       this.reloadIntegrations();
       this.setState({relayServerUrl: RelayManager.get().getRelayUrl()});
     })

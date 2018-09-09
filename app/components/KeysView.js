@@ -13,7 +13,7 @@ export default class KeysView extends React.Component {
 
     this.state = {credentials: {}};
 
-    BridgeManager.get().addUpdateObserver(() => {
+    BridgeManager.get().addEventHandler((event) => {
       this.setState({credentials: BridgeManager.get().getCredentials()});
     })
   }

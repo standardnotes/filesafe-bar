@@ -9,7 +9,7 @@ export default class ServerSettingsView extends React.Component {
 
     this.state = {credentials: {}};
 
-    BridgeManager.get().addUpdateObserver(() => {
+    BridgeManager.get().addEventHandler((event) => {
       this.setState({relayUrl: RelayManager.get().getRelayUrl()});
     })
   }

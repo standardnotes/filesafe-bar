@@ -6,6 +6,8 @@ import BridgeManager from "../lib/BridgeManager.js";
 import FileManager from '../lib/FileManager';
 import IntegrationManager from '../lib/IntegrationManager';
 import Utils from '../lib/Utils';
+import MessagesManager from "../lib/MessagesManager";
+import MessagesView from "./MessagesView.js";
 
 export default class FilesView extends React.Component {
 
@@ -14,21 +16,21 @@ export default class FilesView extends React.Component {
 
     this.state = {
       files: [],
-      hasCredentials: true
+      messages: []
     };
 
     BridgeManager.get().initiateBridge(() => {
       BridgeManager.get().beginStreamingItem();
     });
 
-    BridgeManager.get().addUpdateObserver(() => {
+    BridgeManager.get().addEventHandler((event) => {
       this.reload();
     })
   }
 
-  reload() {
-    var files = FileManager.get().filesForCurrentNote();
-    this.setState({files: files, hasCredentials: BridgeManager.get().getCredentials() != null});
+  async reload() {
+    var messages = await MessagesManager.get().getMessages();
+    this.setState({messages: messages});
   }
 
   componentDidMount() {
@@ -265,15 +267,16 @@ export default class FilesView extends React.Component {
     return (
       <div className="sn-component" id="files-view">
 
-        {!this.state.hasCredentials &&
-          <div className="notification danger">
-            <div className="text">FileSafe credentials not loaded. Please refresh the app to retrieve valid credentials.</div>
-          </div>
-        }
         <div className="panel-row align-top">
 
-
           <div className="files">
+
+            {this.state.messages.length > 0 &&
+              <div className="panel-section">
+                <MessagesView messages={this.state.messages}/>
+              </div>
+            }
+
             {this.state.status &&
               <div id="file-status" className="horizontal-group">
                 {hasSpinner &&

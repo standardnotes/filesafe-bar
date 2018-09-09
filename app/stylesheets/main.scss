@@ -58,6 +58,12 @@ body {
   opacity: 0.5;
 }
 
+#messages {
+  ul {
+    margin-top: 0;
+  }
+}
+
 #files-view {
   margin-top: 10px;
 

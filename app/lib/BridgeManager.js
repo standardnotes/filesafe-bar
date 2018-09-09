@@ -10,6 +10,10 @@ export default class BridgeManager {
   static FileSafeCredentialsContentType = "SN|FileSafe|Credentials";
   static FileItemMetadataContentTypeKey = "SN|FileSafe|FileMetadata";
 
+  static BridgeEventLoadedCredentials = "BridgeEventLoadedCredentials";
+  static BridgeEventReceivedItems = "BridgeEventReceivedItems";
+  static BridgeEventReceivedNote = "BridgeEventReceivedNote";
+
   /* Singleton */
   static instance = null;
   static get() {
@@ -23,7 +27,7 @@ export default class BridgeManager {
     this.size = null;
   }
 
-  addUpdateObserver(callback) {
+  addEventHandler(callback) {
     let observer = {id: Math.random, callback: callback};
     this.updateObservers.push(observer);
     return observer;
@@ -31,6 +35,12 @@ export default class BridgeManager {
 
   removeUpdateObserver(observer) {
     this.updateObservers.splice(this.updateObservers.indexOf(observer), 1);
+  }
+
+  notifyObserversOfEvent(event) {
+    for(var observer of this.updateObservers) {
+      observer.callback(event);
+    }
   }
 
   initiateBridge(onReady) {
@@ -41,44 +51,20 @@ export default class BridgeManager {
     this.componentManager.setSize("container", "100%", DefaultHeight);
   }
 
-  async loadOrCreateCredentials() {
-    var searchResults = this.filterItems(BridgeManager.FileSafeCredentialsContentType);
-    if(searchResults.length > 1) {
-      this.componentManager.sendCustomEvent(
-        "present-conflict-resolution",
-        {item_ids: searchResults.map((item) => {return item.uuid})},
-        () => {
-          setTimeout(() => {
-            var newResults = this.filterItems(BridgeManager.FileSafeCredentialsContentType);
-            if(newResults.length > 1) {
-              alert("Two copies of credentials exist for FileSafe. For proper functioning, please ensure only one instance exists.")
-              return this.loadOrCreateCredentials();
-            }
-          }, 2000);
-        }
-      );
+  async createCredentials() {
+    let bits = 256;
+    let identifer = await SFJS.crypto.generateRandomKey(bits);
+    let password = await SFJS.crypto.generateRandomKey(bits);
+    let credentialParams = await SFJS.crypto.generateInitialKeysAndAuthParamsForUser(identifer, password);
+    credentialParams.relayServerUrl = window.default_relay_server_url;
+    let credentials = new SFItem({
+      content_type: BridgeManager.FileSafeCredentialsContentType,
+      content: credentialParams
+    });
 
-      return;
-    }
-
-    let credentials = searchResults.length > 0 && searchResults[0];
-    if(!credentials) {
-      let bits = 256;
-      let identifer = await SFJS.crypto.generateRandomKey(bits);
-      let password = await SFJS.crypto.generateRandomKey(bits);
-      let credentialParams = await SFJS.crypto.generateInitialKeysAndAuthParamsForUser(identifer, password);
-      credentialParams.relayServerUrl = window.default_relay_server_url;
-
-      credentials = new SFItem({
-        content_type: BridgeManager.FileSafeCredentialsContentType,
-        content: credentialParams
-      });
-
-      this.saveItem(credentials);
-      return credentials;
-    } else {
-      return credentials;
-    }
+    this.saveItem(credentials);
+    this.notifyObserversOfEvent(BridgeManager.BridgeEventLoadedCredentials);
+    return credentials;
   }
 
   getCredentials = () => {
@@ -111,11 +97,6 @@ export default class BridgeManager {
   setHeightCollapsed() {
     this.expanded = false;
     this.componentManager.setSize("container", "100%", DefaultHeight);
-  }
-
-  setComponentData(key, value) {
-    this.componentManager.setComponentDataValueForKey(key, value);
-    this.notifyObserversOfUpdate();
   }
 
   getComponentData(key) {
@@ -179,6 +160,7 @@ export default class BridgeManager {
     const contentTypes = [BridgeManager.FileItemMetadataContentTypeKey, BridgeManager.FileSafeCredentialsContentType];
 
     this.componentManager.streamItems(contentTypes, (items) => {
+      console.log("Received items", items);
       this.handleStreamItemsMessage(items);
     })
   }
@@ -189,10 +171,10 @@ export default class BridgeManager {
      // Only update UI on non-metadata updates.
     if(this.note.isMetadataUpdate) { return; }
 
-    this.notifyObserversOfUpdate();
+    this.notifyObserversOfEvent(BridgeManager.BridgeEventReceivedNote);
   }
 
-  handleStreamItemsMessage(items) {
+  async handleStreamItemsMessage(items) {
     for(var item of items) {
       item = new SFItem(item);
 
@@ -214,19 +196,18 @@ export default class BridgeManager {
     }
 
     if(!this.credentials) {
-      this.loadOrCreateCredentials().then((credentials) => {
-        if(!credentials) {
-          return;
-        }
+      var searchResults = this.filterItems(BridgeManager.FileSafeCredentialsContentType);
+      let credentials = searchResults.length > 0 && searchResults[0];
+      if(credentials) {
         this.authParams = credentials.content.authParams;
         this.keys = credentials.content.keys;
         this.credentials = credentials;
         RelayManager.get().setCredentials(credentials);
-        this.notifyObserversOfUpdate();
-      });
+        this.notifyObserversOfEvent(BridgeManager.BridgeEventLoadedCredentials);
+      }
     }
 
-    this.notifyObserversOfUpdate();
+    this.notifyObserversOfEvent(BridgeManager.BridgeEventReceivedItems);
   }
 
   indexOfItem(item) {
@@ -264,11 +245,5 @@ export default class BridgeManager {
 
   removeItemFromItems(item) {
     this.items = this.items.filter((candidate) => {return candidate.uuid !== item.uuid});
-  }
-
-  notifyObserversOfUpdate() {
-    for(var observer of this.updateObservers) {
-      observer.callback();
-    }
   }
 }
