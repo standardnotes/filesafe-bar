@@ -25,7 +25,7 @@ export default class FilesView extends React.Component {
 
     BridgeManager.get().addEventHandler((event) => {
       this.reload();
-    })
+    });
   }
 
   async reload() {

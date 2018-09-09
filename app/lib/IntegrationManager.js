@@ -2,8 +2,6 @@ import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import BridgeManager from "./BridgeManager";
 
-const IntegrationContentTypeKey = "SN|FileSafe|Integration";
-
 export default class IntegrationManager {
 
   /* Singleton */
@@ -22,24 +20,21 @@ export default class IntegrationManager {
   }
 
   migrateIntegrationsFromCredentials() {
-    console.log("Performing migration");
     var creds = BridgeManager.get().getCredentials();
     if(creds) {
       var integrations = creds.content.integrations;
       if(integrations && integrations.length > 0) {
         for(var oldIntegration of integrations) {
-          var newIntegration = this.createIntegrationObject(oldIntegration);
-          console.log("Migratating old", oldIntegration, "to new", newIntegration);
-          this.saveIntegration(newIntegration);
+          var newIntegration = this.createAndSaveIntegrationObject(oldIntegration);
         }
-        // creds.content.integrations = null;
+        creds.content.integrations = null;
         BridgeManager.get().saveCredentials();
       }
     }
   }
 
   get integrations() {
-    return BridgeManager.get().filterItems(IntegrationContentTypeKey);
+    return BridgeManager.get().filterItems(BridgeManager.FileSafeIntegrationContentTypeKey);
   }
 
   integrationForFile(metadata) {
@@ -55,22 +50,24 @@ export default class IntegrationManager {
     return integration;
   }
 
-  async saveIntegration(code) {
+  async saveIntegrationFromCode(code) {
     var content = this.parseIntegrationCode(code);
 
     if(this.integrations.length == 0) {
       content.isDefaultUploadSource = true;
     }
 
-    let integration = this.createIntegrationObject(content);
-    return BridgeManager.get().saveItem(integration);
+    let integration = this.createAndSaveIntegrationObject(content);
+    return integration;
   }
 
-  createIntegrationObject(content) {
+  createAndSaveIntegrationObject(content) {
     let integration = new SFItem({
-      content_type: IntegrationContentTypeKey,
+      content_type: BridgeManager.FileSafeIntegrationContentTypeKey,
       content: content
     });
+
+    BridgeManager.get().createItems([integration]);
     return integration;
   }
 
@@ -80,10 +77,6 @@ export default class IntegrationManager {
     });
   }
 
-  saveIntegration(integration) {
-    BridgeManager.get().saveItem(integration);
-  }
-
   setIntegrationAsDefault(integration) {
     var currentDefault = this.getDefaultUploadSource();
     if(currentDefault) {
@@ -91,7 +84,7 @@ export default class IntegrationManager {
     }
 
     integration.content.isDefaultUploadSource = true;
-    this.saveIntegration(integration);
+    BridgeManager.get().saveItem(integration);
   }
 
   deleteIntegration(integrationObject) {

@@ -52,7 +52,7 @@ export default class IntegrationsView extends React.Component {
       return;
     }
 
-    IntegrationManager.get().saveIntegration(code);
+    IntegrationManager.get().saveIntegrationFromCode(code);
     this.setState({integrationCode: null, showInputForm: false});
     this.reloadIntegrations();
   }
@@ -67,9 +67,7 @@ export default class IntegrationsView extends React.Component {
   }
 
   deleteIntegration = (integration) => {
-    if(confirm("Are you sure you want to delete this integration?")) {
-      IntegrationManager.get().deleteIntegration(integration);
-    }
+    IntegrationManager.get().deleteIntegration(integration);
   }
 
   setIntegrationAsDefaultUploadSource = (integration) => {
@@ -81,7 +79,7 @@ export default class IntegrationsView extends React.Component {
   }
 
   displayStringForIntegration(integration) {
-    var comps = integration.source.split("_");
+    var comps = integration.content.source.split("_");
     var result = "";
     for(var comp of comps) {
       result += this.capitalizeFirstLetter(comp) + " ";
@@ -132,12 +130,12 @@ export default class IntegrationsView extends React.Component {
           {this.state.integrations.map((integration) =>
             <div className="horizontal-group body-text-color">
               <p className="body-text-color">
-                <span className={"body-text-color " + (integration.isDefaultUploadSource ? "bold" : undefined)}>{this.displayStringForIntegration(integration)}</span>
-                {integration.isDefaultUploadSource &&
+                <span className={"body-text-color " + (integration.content.isDefaultUploadSource ? "bold" : undefined)}>{this.displayStringForIntegration(integration)}</span>
+                {integration.content.isDefaultUploadSource &&
                   <span className="body-text-color"> (Default)</span>
                 }
               </p>
-              {hasMultipleIntegrations && !integration.isDefaultUploadSource &&
+              {hasMultipleIntegrations && !integration.content.isDefaultUploadSource &&
                 <a className="info" onClick={() => {this.setIntegrationAsDefaultUploadSource(integration)}}>Make Default Upload Source</a>
               }
               <a className="danger" onClick={() => {this.deleteIntegration(integration)}}>Delete</a>

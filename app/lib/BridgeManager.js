@@ -9,10 +9,12 @@ export default class BridgeManager {
   static FileItemContentTypeKey = "SN|FileSafe|File";
   static FileSafeCredentialsContentType = "SN|FileSafe|Credentials";
   static FileItemMetadataContentTypeKey = "SN|FileSafe|FileMetadata";
+  static FileSafeIntegrationContentTypeKey = "SN|FileSafe|Integration";
 
   static BridgeEventLoadedCredentials = "BridgeEventLoadedCredentials";
   static BridgeEventReceivedItems = "BridgeEventReceivedItems";
   static BridgeEventReceivedNote = "BridgeEventReceivedNote";
+  static BridgeEventSavedItem = "BridgeEventSavedItem";
 
   /* Singleton */
   static instance = null;
@@ -123,6 +125,7 @@ export default class BridgeManager {
     return new Promise((resolve, reject) => {
       this.componentManager.saveItems(items, (response) => {
         resolve(response);
+        this.notifyObserversOfEvent(BridgeManager.BridgeEventSavedItem);
       })
     })
   }
@@ -137,19 +140,6 @@ export default class BridgeManager {
     return this.filterItems(BridgeManager.FileItemMetadataContentTypeKey);
   }
 
-  categorizedItems() {
-    var types = {};
-    for(var item of this.items) {
-      var array = types[item.content_type];
-      if(!array) {
-        array = [];
-        types[item.content_type] = array;
-      }
-      array.push(item);
-    }
-    return types;
-  }
-
   beginStreamingItem() {
     this._didBeginStreaming = true;
 
@@ -157,7 +147,11 @@ export default class BridgeManager {
       this.handleReceiveNoteMessage(note);
     });
 
-    const contentTypes = [BridgeManager.FileItemMetadataContentTypeKey, BridgeManager.FileSafeCredentialsContentType];
+    const contentTypes = [
+      BridgeManager.FileItemMetadataContentTypeKey,
+      BridgeManager.FileSafeCredentialsContentType,
+      BridgeManager.FileSafeIntegrationContentTypeKey
+    ];
 
     this.componentManager.streamItems(contentTypes, (items) => {
       console.log("Received items", items);
@@ -226,7 +220,7 @@ export default class BridgeManager {
   createItems(items, callback) {
     for(var item of items) { item.uuid = null; }
     this.componentManager.createItems(items, (createdItems) => {
-      callback(createdItems);
+      callback && callback(createdItems);
     })
   }
 
@@ -237,6 +231,10 @@ export default class BridgeManager {
       }
     }
     return -1;
+  }
+
+  deleteItem(item, callback) {
+    this.deleteItems([item], callback);
   }
 
   deleteItems(items, callback) {
