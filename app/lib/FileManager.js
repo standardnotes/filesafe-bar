@@ -26,6 +26,13 @@ export default class FileManager {
     })
   }
 
+  filesEncryptedWithCredential(credential) {
+    var allFiles = BridgeManager.get().getFileItems();
+    return allFiles.filter((file) => {
+      return _.find(file.content.references, {uuid: credential.uuid});
+    })
+  }
+
   async deleteFile(metadataItem) {
     return new Promise((resolve, reject) => {
       BridgeManager.get().deleteItems([metadataItem], (response) => {
@@ -43,7 +50,7 @@ export default class FileManager {
     })
   }
 
-  async uploadFile(itemParams, inputFileName, fileType) {
+  async uploadFile(itemParams, inputFileName, fileType, credential) {
     var integration = IntegrationManager.get().getDefaultUploadSource();
     var outputFileName = `${inputFileName}.sf.json`;
 
@@ -61,12 +68,18 @@ export default class FileManager {
           content: {
             serverMetadata: event.data.metadata,
             fileName: inputFileName,
-            fileType: fileType
+            fileType: fileType,
+            references: [
+              {
+                uuid: credential.uuid,
+                content_type: credential.content_type
+              }
+            ]
           }
         });
 
         metadataItem.addItemAsRelationship(BridgeManager.get().note);
-        BridgeManager.get().saveItems([metadataItem]);
+        BridgeManager.get().createItem(metadataItem);
         resolve();
       });
 
@@ -102,7 +115,7 @@ export default class FileManager {
     })
   }
 
-  async encryptFile(data, inputFileName, fileType) {
+  async encryptFile(data, inputFileName, fileType, credential) {
     return new Promise((resolve, reject) => {
       const worker = new EncryptionWorker();
 
@@ -112,8 +125,8 @@ export default class FileManager {
 
       worker.postMessage({
         operation: "encrypt",
-        keys: BridgeManager.get().keys,
-        authParams: BridgeManager.get().authParams,
+        keys: credential.content.keys,
+        authParams: credential.content.authParams,
         contentType: BridgeManager.FileItemContentTypeKey,
         fileData: data,
         fileName: inputFileName,
@@ -122,7 +135,7 @@ export default class FileManager {
     })
   }
 
-  async decryptFile(item) {
+  async decryptFile(item, credential) {
     return new Promise((resolve, reject) => {
       const worker = new EncryptionWorker();
 
@@ -138,7 +151,7 @@ export default class FileManager {
 
       worker.postMessage({
         operation: "decrypt",
-        keys: BridgeManager.get().keys,
+        keys: credential.content.keys,
         item: item
       });
     })

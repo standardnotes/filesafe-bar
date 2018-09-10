@@ -16,7 +16,6 @@ export default class IntegrationsView extends React.Component {
 
     BridgeManager.get().addEventHandler((event) => {
       this.reloadIntegrations();
-      this.setState({relayServerUrl: RelayManager.get().getRelayUrl()});
     })
   }
 
@@ -58,7 +57,7 @@ export default class IntegrationsView extends React.Component {
   }
 
   addNewIntegrationClicked = () => {
-    window.open(this.state.relayServerUrl, "_blank");
+    window.open(BridgeManager.get().defaultRelayServerUrl(), "_blank");
     this.setState({showInputForm: true});
   }
 

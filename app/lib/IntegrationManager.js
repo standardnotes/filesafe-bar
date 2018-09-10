@@ -29,7 +29,7 @@ export default class IntegrationManager {
           var newIntegration = this.createAndSaveIntegrationObject(oldIntegration);
         }
         creds.content.integrations = null;
-        CredentialManager.get().saveCredentials(creds);
+        CredentialManager.get().saveCredential(creds);
       }
     }
   }

@@ -31,7 +31,6 @@ export default class MessagesManager {
     }
 
     var integrations = IntegrationManager.get().integrations;
-    console.log("Integrations:", integrations);
 
     if(!integrations || integrations.length == 0) {
       messages.push({
@@ -39,8 +38,6 @@ export default class MessagesManager {
         css: "warning"
       })
     }
-
-    console.log("Returning messages", messages);
 
     return messages;
   }

@@ -2,7 +2,6 @@ import React from 'react';
 import KeysView from "./KeysView";
 import FilesView from "./FilesView.js";
 import IntegrationsView from "./IntegrationsView";
-import ServerSettingsView from "./ServerSettingsView";
 
 export default class Home extends React.Component {
 
@@ -27,10 +26,6 @@ export default class Home extends React.Component {
 
           <div className="panel-section">
             <KeysView/>
-          </div>
-
-          <div className="panel-section">
-            <ServerSettingsView/>
           </div>
 
         </div>

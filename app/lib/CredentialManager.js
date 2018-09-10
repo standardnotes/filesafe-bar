@@ -2,6 +2,8 @@ import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import BridgeManager from "./BridgeManager";
 import IntegrationManager from "./IntegrationManager";
+import RelayManager from "./RelayManager";
+import FileManager from "./FileManager";
 
 export default class CredentialManager {
 
@@ -23,7 +25,10 @@ export default class CredentialManager {
   }
 
   reloadCredentials() {
-    var searchResults = BridgeEventSavedItem.get().filterItems(BridgeManager.FileSafeCredentialsContentType);
+    // clear current credentials, search results should contain all items and not just new incoming stuff.
+    this.credentials = [];
+
+    var searchResults = BridgeManager.get().filterItems(BridgeManager.FileSafeCredentialsContentType);
     if(searchResults.length == 0) {
       return;
     }
@@ -36,21 +41,16 @@ export default class CredentialManager {
 
     RelayManager.get().setCredentials(this.getDefaultCredentials());
     if(this.credentials.length > 0) {
-      BridgeManager.get().notifyObserversOfEvent(BridgeManager.BridgeEventLoadedCredentials);
+      this.didLoadCredentials();
     }
   }
 
-  async loadCredentials() {
-
-  }
-
-  async createCredentials() {
+  async createNewCredentials() {
     let bits = 256;
     let identifer = await SFJS.crypto.generateRandomKey(bits);
     let password = await SFJS.crypto.generateRandomKey(bits);
 
     let credentialParams = await SFJS.crypto.generateInitialKeysAndAuthParamsForUser(identifer, password);
-    credentialParams.relayServerUrl = window.default_relay_server_url;
     credentialParams.isDefault = this.credentials.length == 0;
 
     let credentials = new SFItem({
@@ -58,9 +58,51 @@ export default class CredentialManager {
       content: credentialParams
     });
 
-    BridgeManager.get().createItem(credentials);
-    BridgeManager.get().notifyObserversOfEvent(BridgeManager.BridgeEventLoadedCredentials);
+    BridgeManager.get().saveItem(credentials);
+    this.didLoadCredentials();
     return credentials;
+  }
+
+  didLoadCredentials() {
+    BridgeManager.get().notifyObserversOfEvent(BridgeManager.BridgeEventLoadedCredentials);
+
+    this.migrateRelayUrlsFromCredentialsToIntegrations();
+  }
+
+  migrateRelayUrlsFromCredentialsToIntegrations() {
+    // Migrate from old format where relay url was saved into credentials.
+    // We now want to save relay urls as part of individual integrations.
+
+    var toSave = [];
+
+    var integrations = IntegrationManager.get().integrations;
+    for(var credential of this.credentials) {
+      if(credential.content.relayServerUrl) {
+        for(var integration of integrations) {
+          integration.content.relayUrl = credential.content.relayServerUrl;
+          delete credential.content.relayServerUrl;
+          toSave.push(integration);
+        }
+
+        toSave.push(credential);
+      }
+    }
+
+    BridgeManager.get().saveItems(toSave);
+  }
+
+  numberOfFilesEncryptedWithCredential(credential) {
+    return FileManager.get().filesEncryptedWithCredential(credential).length;
+  }
+
+  credentialForFile(file) {
+    return this.credentials.find((candidate) => {
+      return _.find(file.content.references, {uuid: candidate.uuid});
+    })
+  }
+
+  getAllCredentials() {
+    return this.credentials;
   }
 
   getDefaultCredentials = () => {
@@ -75,13 +117,21 @@ export default class CredentialManager {
     return defaultCredentials;
   }
 
-  saveCredentials(credentials) {
-    BridgeManager.get().saveItem(credentials);
+  setCredentialAsDefault = (credential) => {
+    let currentDefault = this.getDefaultCredentials();
+    if(currentDefault) {
+      currentDefault.content.isDefault = false;
+    }
+    credential.content.isDefault = true;
+
+    BridgeManager.get().saveItems([currentDefault, credential]);
   }
 
-  setRelayUrl(url) {
-    var credentials = this.getDefaultCredentials();
-    credentials.content.relayServerUrl = url;
+  deleteCredential = (credential) => {
+    BridgeManager.get().deleteItem(credential);
+  }
+
+  saveCredential(credentials) {
     BridgeManager.get().saveItem(credentials);
   }
 

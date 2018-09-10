@@ -5,6 +5,7 @@ import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFItemParams, SFItem
 import BridgeManager from "../lib/BridgeManager.js";
 import FileManager from '../lib/FileManager';
 import IntegrationManager from '../lib/IntegrationManager';
+import CredentialManager from '../lib/CredentialManager';
 import Utils from '../lib/Utils';
 import MessagesManager from "../lib/MessagesManager";
 import MessagesView from "./MessagesView.js";
@@ -30,7 +31,11 @@ export default class FilesView extends React.Component {
 
   async reload() {
     var messages = await MessagesManager.get().getMessages();
-    this.setState({messages: messages});
+    var files = FileManager.get().filesForCurrentNote();
+    this.setState({
+      files: files,
+      messages: messages
+    });
   }
 
   componentDidMount() {
@@ -197,12 +202,16 @@ export default class FilesView extends React.Component {
   async encryptFile(data, inputFileName, fileType) {
     this.setState({status: "Encrypting..."});
 
-    return FileManager.get().encryptFile(data, inputFileName, fileType).then(async (itemParams) => {
+    let credential = CredentialManager.get().getDefaultCredentials();
+
+    return FileManager.get().encryptFile(data, inputFileName, fileType, credential).then(async (itemParams) => {
       this.setState({status: "Uploading..."});
       await this.wait(0.5);
 
-      return FileManager.get().uploadFile(itemParams, inputFileName, fileType).then(() => {
+      return FileManager.get().uploadFile(itemParams, inputFileName, fileType, credential).then(() => {
         this.setState({status: "Upload Success."});
+
+
       }).catch((uploadError) => {
         this.flashError("Error uploading file.");
       })
@@ -221,9 +230,12 @@ export default class FilesView extends React.Component {
 
   downloadFile = async (metadata) => {
     this.setState({status: "Downloading..."});
+
+    let credential = CredentialManager.get().credentialForFile(metadata);
+
     return FileManager.get().downloadFile(metadata).then((item) => {
       this.setState({status: "Decrypting..."});
-      return FileManager.get().decryptFile(item).then((data) => {
+      return FileManager.get().decryptFile(item, credential).then((data) => {
         Utils.downloadData(Utils.base64toBinary(data.decryptedData), metadata.content.fileName, metadata.content.fileType);
         this.setState({status: null});
       }).catch((decryptionError) => {

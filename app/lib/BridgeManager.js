@@ -3,7 +3,7 @@ import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import RelayManager from "./RelayManager";
 
-const DefaultHeight = 75;
+const DefaultHeight = 300;
 
 export default class BridgeManager {
   static FileItemContentTypeKey = "SN|FileSafe|File";
@@ -27,6 +27,10 @@ export default class BridgeManager {
     this.updateObservers = [];
     this.items = [];
     this.size = null;
+  }
+
+  defaultRelayServerUrl() {
+    return window.default_relay_server_url;
   }
 
   addEventHandler(callback) {
@@ -85,19 +89,6 @@ export default class BridgeManager {
 
   didBeginStreaming() {
     return this._didBeginStreaming;
-  }
-
-  async saveItem(item) {
-    return this.saveItems([item]);
-  }
-
-  async saveItems(items) {
-    return new Promise((resolve, reject) => {
-      this.componentManager.saveItems(items, (response) => {
-        resolve(response);
-        this.notifyObserversOfEvent(BridgeManager.BridgeEventSavedItem);
-      })
-    })
   }
 
   filterItems(contentType) {
@@ -183,6 +174,19 @@ export default class BridgeManager {
     for(var item of items) { item.uuid = null; }
     this.componentManager.createItems(items, (createdItems) => {
       callback && callback(createdItems);
+    })
+  }
+
+  async saveItem(item) {
+    return this.saveItems([item]);
+  }
+
+  async saveItems(items) {
+    return new Promise((resolve, reject) => {
+      this.componentManager.saveItems(items, (response) => {
+        resolve(response);
+        this.notifyObserversOfEvent(BridgeManager.BridgeEventSavedItem);
+      })
     })
   }
 
