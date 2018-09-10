@@ -2,6 +2,7 @@ import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import BridgeManager from "./BridgeManager";
 import IntegrationManager from "./IntegrationManager";
+import CredentialManager from "./CredentialManager";
 
 export default class MessagesManager {
 
@@ -21,7 +22,7 @@ export default class MessagesManager {
     No integrations
     */
 
-    var credentials = await BridgeManager.get().getCredentials();
+    var credentials = await CredentialManager.get().getDefaultCredentials();
     if(!credentials) {
       messages.push({
         message: "No encryption keys loaded. Press Expand to generate your keys.",
@@ -31,7 +32,7 @@ export default class MessagesManager {
 
     var integrations = IntegrationManager.get().integrations;
     console.log("Integrations:", integrations);
-    
+
     if(!integrations || integrations.length == 0) {
       messages.push({
         message: "No cloud integrations configured. Press Expand to configure your first integration.",

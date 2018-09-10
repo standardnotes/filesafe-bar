@@ -53,36 +53,6 @@ export default class BridgeManager {
     this.componentManager.setSize("container", "100%", DefaultHeight);
   }
 
-  async createCredentials() {
-    let bits = 256;
-    let identifer = await SFJS.crypto.generateRandomKey(bits);
-    let password = await SFJS.crypto.generateRandomKey(bits);
-    let credentialParams = await SFJS.crypto.generateInitialKeysAndAuthParamsForUser(identifer, password);
-    credentialParams.relayServerUrl = window.default_relay_server_url;
-    let credentials = new SFItem({
-      content_type: BridgeManager.FileSafeCredentialsContentType,
-      content: credentialParams
-    });
-
-    this.saveItem(credentials);
-    this.notifyObserversOfEvent(BridgeManager.BridgeEventLoadedCredentials);
-    return credentials;
-  }
-
-  getCredentials = () => {
-    return this.credentials;
-  }
-
-  saveCredentials() {
-    this.saveItem(this.getCredentials());
-  }
-
-  setRelayUrl(url) {
-    var credentials = this.getCredentials();
-    credentials.content.relayServerUrl = url;
-    this.saveItem(credentials);
-  }
-
   toggleHeight() {
     if(this.expanded) {
       this.setHeightCollapsed();
@@ -189,18 +159,6 @@ export default class BridgeManager {
       }
     }
 
-    if(!this.credentials) {
-      var searchResults = this.filterItems(BridgeManager.FileSafeCredentialsContentType);
-      let credentials = searchResults.length > 0 && searchResults[0];
-      if(credentials) {
-        this.authParams = credentials.content.authParams;
-        this.keys = credentials.content.keys;
-        this.credentials = credentials;
-        RelayManager.get().setCredentials(credentials);
-        this.notifyObserversOfEvent(BridgeManager.BridgeEventLoadedCredentials);
-      }
-    }
-
     this.notifyObserversOfEvent(BridgeManager.BridgeEventReceivedItems);
   }
 
@@ -215,6 +173,10 @@ export default class BridgeManager {
 
   removeItemFromItems(item) {
     this.items = this.items.filter((candidate) => {return candidate.uuid !== item.uuid});
+  }
+
+  createItem(item, callback) {
+    this.createItems([item], callback);
   }
 
   createItems(items, callback) {

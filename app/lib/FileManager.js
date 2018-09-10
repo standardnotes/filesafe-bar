@@ -3,6 +3,7 @@ import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFIte
 import RelayManager from "./RelayManager";
 import BridgeManager from "./BridgeManager";
 import IntegrationManager from "./IntegrationManager";
+import CredentialManager from "./CredentialManager"
 
 // const EncryptionWorker = require("worker-loader?name=hash.worker.js!./encryption.worker");
 import EncryptionWorker from './encryption.worker.js';
@@ -75,7 +76,7 @@ export default class FileManager {
         itemParams: itemParams,
         integration: integration,
         operation: operation,
-        credentials: BridgeManager.get().getCredentials()
+        credentials: CredentialManager.get().getDefaultCredentials()
       };
 
       worker.postMessage(params);

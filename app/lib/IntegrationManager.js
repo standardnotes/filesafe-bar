@@ -1,6 +1,7 @@
 import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import BridgeManager from "./BridgeManager";
+import CredentialManager from "./CredentialManager";
 
 export default class IntegrationManager {
 
@@ -20,7 +21,7 @@ export default class IntegrationManager {
   }
 
   migrateIntegrationsFromCredentials() {
-    var creds = BridgeManager.get().getCredentials();
+    var creds = CredentialManager.get().getDefaultCredentials();
     if(creds) {
       var integrations = creds.content.integrations;
       if(integrations && integrations.length > 0) {
@@ -28,7 +29,7 @@ export default class IntegrationManager {
           var newIntegration = this.createAndSaveIntegrationObject(oldIntegration);
         }
         creds.content.integrations = null;
-        BridgeManager.get().saveCredentials();
+        CredentialManager.get().saveCredentials(creds);
       }
     }
   }

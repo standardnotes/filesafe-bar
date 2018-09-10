@@ -23,10 +23,6 @@ body {
  .panel .content {
    padding-top: 6px !important;
 
-   // p:not(.body-text-color) {
-   //   color: black;
-   // }
-
    p {
      color: inherit;
    }
@@ -62,6 +58,7 @@ body {
   ul {
     margin-top: 0;
     margin-left: 0;
+    padding-left: 8px;
   }
 }
 

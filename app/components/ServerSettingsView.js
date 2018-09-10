@@ -1,6 +1,7 @@
 import React from 'react';
 import BridgeManager from "../lib/BridgeManager.js";
 import RelayManager from "../lib/RelayManager";
+import CredentialManager from "../lib/CredentialManager";
 
 export default class ServerSettingsView extends React.Component {
 
@@ -39,7 +40,7 @@ export default class ServerSettingsView extends React.Component {
       return;
     }
 
-    BridgeManager.get().setRelayUrl(url);
+    CredentialManager.get().setRelayUrl(url);
 
     this.setState({relayUrl: url, showForm: false, newRelayUrl: null});
   }

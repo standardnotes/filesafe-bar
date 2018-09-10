@@ -5,6 +5,7 @@ import BridgeManager from "../lib/BridgeManager.js";
 import RelayManager from "../lib/RelayManager";
 import Utils from "../lib/Utils";
 import IntegrationManager from "../lib/IntegrationManager";
+import CredentialManager from "../lib/CredentialManager";
 
 export default class KeysView extends React.Component {
 
@@ -14,7 +15,7 @@ export default class KeysView extends React.Component {
     this.state = {credentials: {}};
 
     BridgeManager.get().addEventHandler((event) => {
-      this.setState({credentials: BridgeManager.get().getCredentials()});
+      this.setState({credentials: CredentialManager.get().getDefaultCredentials()});
     })
   }
 
