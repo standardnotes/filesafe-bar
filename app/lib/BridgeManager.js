@@ -115,9 +115,8 @@ export default class BridgeManager {
     ];
 
     this.componentManager.streamItems(contentTypes, (items) => {
-      console.log("Received items", items);
       this.handleStreamItemsMessage(items);
-    })
+    });
   }
 
   handleReceiveNoteMessage(note) {
