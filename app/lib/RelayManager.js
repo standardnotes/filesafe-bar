@@ -19,20 +19,15 @@ export default class RelayManager {
     this.credentials = credentials;
   }
 
-  getRelayUrl() {
-    var credentials = this.credentials;
-    return credentials && credentials.content.relayServerUrl;
-  }
-
   async uploadFile(name, item, integration) {
-    let url = `${this.getRelayUrl()}/integrations/save-item`;
+    let url = `${integration.content.relayUrl}/integrations/save-item`;
     let params = {
       file: {
         name: name,
         item: item // base64 string of file
       },
-      source: integration.source,
-      authorization: integration.authorization
+      source: integration.content.source,
+      authorization: integration.content.authorization
     }
 
     return new Promise((resolve, reject) => {
@@ -50,10 +45,10 @@ export default class RelayManager {
   }
 
   async downloadFile(metadataItem, integration) {
-    let url = `${this.getRelayUrl()}/integrations/download-item`;
+    let url = `${integration.content.relayUrl}/integrations/download-item`;
     let params = {
       metadata: metadataItem.content.serverMetadata,
-      authorization: integration.authorization
+      authorization: integration.content.authorization
     }
 
     return new Promise((resolve, reject) => {
@@ -68,10 +63,10 @@ export default class RelayManager {
   }
 
   async deleteFile(metadataItem, integration) {
-    let url = `${this.getRelayUrl()}/integrations/delete-item`;
+    let url = `${integration.content.relayUrl}/integrations/delete-item`;
     let params = {
       metadata: metadataItem.content.serverMetadata,
-      authorization: integration.authorization
+      authorization: integration.content.authorization
     }
 
     return new Promise((resolve, reject) => {

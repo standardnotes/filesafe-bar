@@ -5,7 +5,10 @@ import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFItemParams, SFItem
 import BridgeManager from "../lib/BridgeManager.js";
 import FileManager from '../lib/FileManager';
 import IntegrationManager from '../lib/IntegrationManager';
+import CredentialManager from '../lib/CredentialManager';
 import Utils from '../lib/Utils';
+import MessagesManager from "../lib/MessagesManager";
+import MessagesView from "./MessagesView.js";
 
 export default class FilesView extends React.Component {
 
@@ -14,21 +17,25 @@ export default class FilesView extends React.Component {
 
     this.state = {
       files: [],
-      hasCredentials: true
+      messages: []
     };
 
     BridgeManager.get().initiateBridge(() => {
       BridgeManager.get().beginStreamingItem();
     });
 
-    BridgeManager.get().addUpdateObserver(() => {
+    BridgeManager.get().addEventHandler((event) => {
       this.reload();
-    })
+    });
   }
 
-  reload() {
+  async reload() {
+    var messages = await MessagesManager.get().getMessages();
     var files = FileManager.get().filesForCurrentNote();
-    this.setState({files: files, hasCredentials: BridgeManager.get().getCredentials() != null});
+    this.setState({
+      files: files,
+      messages: messages
+    });
   }
 
   componentDidMount() {
@@ -195,12 +202,16 @@ export default class FilesView extends React.Component {
   async encryptFile(data, inputFileName, fileType) {
     this.setState({status: "Encrypting..."});
 
-    return FileManager.get().encryptFile(data, inputFileName, fileType).then(async (itemParams) => {
+    let credential = CredentialManager.get().getDefaultCredentials();
+
+    return FileManager.get().encryptFile(data, inputFileName, fileType, credential).then(async (itemParams) => {
       this.setState({status: "Uploading..."});
       await this.wait(0.5);
 
-      return FileManager.get().uploadFile(itemParams, inputFileName, fileType).then(() => {
+      return FileManager.get().uploadFile(itemParams, inputFileName, fileType, credential).then(() => {
         this.setState({status: "Upload Success."});
+
+
       }).catch((uploadError) => {
         this.flashError("Error uploading file.");
       })
@@ -219,11 +230,14 @@ export default class FilesView extends React.Component {
 
   downloadFile = async (metadata) => {
     this.setState({status: "Downloading..."});
+
+    let credential = CredentialManager.get().credentialForFile(metadata);
+
     return FileManager.get().downloadFile(metadata).then((item) => {
       this.setState({status: "Decrypting..."});
-      return FileManager.get().decryptFile(item).then((data) => {
+      return FileManager.get().decryptFile(item, credential).then((data) => {
         Utils.downloadData(Utils.base64toBinary(data.decryptedData), metadata.content.fileName, metadata.content.fileType);
-        this.setState({status: null});
+        this.setState({status: null, selectedFile: null});
       }).catch((decryptionError) => {
         this.flashError("Error decrypting file.");
       })
@@ -265,15 +279,16 @@ export default class FilesView extends React.Component {
     return (
       <div className="sn-component" id="files-view">
 
-        {!this.state.hasCredentials &&
-          <div className="notification danger">
-            <div className="text">FileSafe credentials not loaded. Please refresh the app to retrieve valid credentials.</div>
-          </div>
-        }
         <div className="panel-row align-top">
 
-
           <div className="files">
+
+            {this.state.messages.length > 0 &&
+              <div id="messages-container" className="panel-section">
+                <MessagesView messages={this.state.messages}/>
+              </div>
+            }
+
             {this.state.status &&
               <div id="file-status" className="horizontal-group">
                 {hasSpinner &&

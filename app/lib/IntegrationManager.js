@@ -1,6 +1,7 @@
 import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import BridgeManager from "./BridgeManager";
+import CredentialManager from "./CredentialManager";
 
 export default class IntegrationManager {
 
@@ -11,24 +12,35 @@ export default class IntegrationManager {
     return this.instance;
   }
 
-  get integrations() {
-    var creds = BridgeManager.get().getCredentials();
-    if(creds) {
-      if(!creds.content.integrations) {
-        creds.content.integrations = [];
+  constructor() {
+    BridgeManager.get().addEventHandler((event) => {
+      if(event == BridgeManager.BridgeEventLoadedCredentials) {
+        this.migrateIntegrationsFromCredentials();
       }
-      return creds.content.integrations;
-    }
-    return null;
+    });
   }
 
-  saveIntegrations() {
-    BridgeManager.get().saveCredentials();
+  migrateIntegrationsFromCredentials() {
+    var creds = CredentialManager.get().getDefaultCredentials();
+    if(creds) {
+      var integrations = creds.content.integrations;
+      if(integrations && integrations.length > 0) {
+        for(var oldIntegration of integrations) {
+          var newIntegration = this.createAndSaveIntegrationObject(oldIntegration);
+        }
+        creds.content.integrations = null;
+        CredentialManager.get().saveCredential(creds);
+      }
+    }
+  }
+
+  get integrations() {
+    return BridgeManager.get().filterItems(BridgeManager.FileSafeIntegrationContentTypeKey);
   }
 
   integrationForFile(metadata) {
     return this.integrations.find((integration) => {
-      return metadata.content.serverMetadata && integration.source == metadata.content.serverMetadata.source;
+      return metadata.content.serverMetadata && integration.content.source == metadata.content.serverMetadata.source;
     });
   }
 
@@ -39,37 +51,44 @@ export default class IntegrationManager {
     return integration;
   }
 
-  saveIntegration(code) {
-    let integrations = this.integrations;
-    var integration = this.parseIntegrationCode(code);
+  async saveIntegrationFromCode(code) {
+    var content = this.parseIntegrationCode(code);
 
-    if(integrations.length == 0) {
-      integration.isDefaultUploadSource = true;
+    if(this.integrations.length == 0) {
+      content.isDefaultUploadSource = true;
     }
 
-    integrations.push(integration);
-    this.saveIntegrations();
+    let integration = this.createAndSaveIntegrationObject(content);
+    return integration;
+  }
+
+  createAndSaveIntegrationObject(content) {
+    let integration = new SFItem({
+      content_type: BridgeManager.FileSafeIntegrationContentTypeKey,
+      content: content
+    });
+
+    BridgeManager.get().createItems([integration]);
+    return integration;
   }
 
   getDefaultUploadSource() {
     return this.integrations.find((integration) => {
-      return integration.isDefaultUploadSource;
+      return integration.content.isDefaultUploadSource;
     });
   }
 
   setIntegrationAsDefault(integration) {
     var currentDefault = this.getDefaultUploadSource();
     if(currentDefault) {
-      currentDefault.isDefaultUploadSource = false;
+      currentDefault.content.isDefaultUploadSource = false;
     }
 
-    integration.isDefaultUploadSource = true;
-    this.saveIntegrations();
+    integration.content.isDefaultUploadSource = true;
+    BridgeManager.get().saveItem(integration);
   }
 
   deleteIntegration(integrationObject) {
-    let integrations = this.integrations;
-    _.remove(integrations, {rawCode: integrationObject.rawCode});
-    this.saveIntegrations();
+    BridgeManager.get().deleteItem(integrationObject);
   }
 }

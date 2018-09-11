@@ -3,12 +3,23 @@ import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import RelayManager from "./RelayManager";
 
-const DefaultHeight = 75;
+const BaseHeight = 77;
+
+const FileHeight = 75;
+const MessageHavingHeight = 38;
+const PerMessageHeight = 28;
+const ExpandedHeight = 400;
 
 export default class BridgeManager {
   static FileItemContentTypeKey = "SN|FileSafe|File";
   static FileSafeCredentialsContentType = "SN|FileSafe|Credentials";
   static FileItemMetadataContentTypeKey = "SN|FileSafe|FileMetadata";
+  static FileSafeIntegrationContentTypeKey = "SN|FileSafe|Integration";
+
+  static BridgeEventLoadedCredentials = "BridgeEventLoadedCredentials";
+  static BridgeEventReceivedItems = "BridgeEventReceivedItems";
+  static BridgeEventReceivedNote = "BridgeEventReceivedNote";
+  static BridgeEventSavedItem = "BridgeEventSavedItem";
 
   /* Singleton */
   static instance = null;
@@ -23,7 +34,11 @@ export default class BridgeManager {
     this.size = null;
   }
 
-  addUpdateObserver(callback) {
+  defaultRelayServerUrl() {
+    return window.default_relay_server_url;
+  }
+
+  addEventHandler(callback) {
     let observer = {id: Math.random, callback: callback};
     this.updateObservers.push(observer);
     return observer;
@@ -33,66 +48,46 @@ export default class BridgeManager {
     this.updateObservers.splice(this.updateObservers.indexOf(observer), 1);
   }
 
+  notifyObserversOfEvent(event) {
+    for(var observer of this.updateObservers) {
+      observer.callback(event);
+    }
+
+    if(event == BridgeManager.BridgeEventReceivedItems) {
+      this.recomputeHeight();
+    }
+  }
+
+  recomputeHeight() {
+    var totalHeight = BaseHeight;
+
+    var credentials = this.filterItems(BridgeManager.FileSafeCredentialsContentType);
+    if(credentials.length == 0) {
+      totalHeight += PerMessageHeight;
+    }
+
+    var integrations = this.filterItems(BridgeManager.FileSafeIntegrationContentTypeKey);
+    if(integrations.length == 0) {
+      totalHeight += PerMessageHeight;
+    }
+
+    if(integrations.length == 0 || credentials.length == 0) {
+      totalHeight += MessageHavingHeight;
+    }
+
+    if(this.expanded) {
+      totalHeight = ExpandedHeight;
+    }
+
+    this.componentManager.setSize("container", "100%", totalHeight);
+  }
+
   initiateBridge(onReady) {
     this.componentManager = new ComponentManager([], () => {
       onReady && onReady();
     });
 
-    this.componentManager.setSize("container", "100%", DefaultHeight);
-  }
-
-  async loadOrCreateCredentials() {
-    var searchResults = this.filterItems(BridgeManager.FileSafeCredentialsContentType);
-    if(searchResults.length > 1) {
-      this.componentManager.sendCustomEvent(
-        "present-conflict-resolution",
-        {item_ids: searchResults.map((item) => {return item.uuid})},
-        () => {
-          setTimeout(() => {
-            var newResults = this.filterItems(BridgeManager.FileSafeCredentialsContentType);
-            if(newResults.length > 1) {
-              alert("Two copies of credentials exist for FileSafe. For proper functioning, please ensure only one instance exists.")
-              return this.loadOrCreateCredentials();
-            }
-          }, 2000);
-        }
-      );
-
-      return;
-    }
-
-    let credentials = searchResults.length > 0 && searchResults[0];
-    if(!credentials) {
-      let bits = 256;
-      let identifer = await SFJS.crypto.generateRandomKey(bits);
-      let password = await SFJS.crypto.generateRandomKey(bits);
-      let credentialParams = await SFJS.crypto.generateInitialKeysAndAuthParamsForUser(identifer, password);
-      credentialParams.relayServerUrl = window.default_relay_server_url;
-
-      credentials = new SFItem({
-        content_type: BridgeManager.FileSafeCredentialsContentType,
-        content: credentialParams
-      });
-
-      this.saveItem(credentials);
-      return credentials;
-    } else {
-      return credentials;
-    }
-  }
-
-  getCredentials = () => {
-    return this.credentials;
-  }
-
-  saveCredentials() {
-    this.saveItem(this.getCredentials());
-  }
-
-  setRelayUrl(url) {
-    var credentials = this.getCredentials();
-    credentials.content.relayServerUrl = url;
-    this.saveItem(credentials);
+    this.recomputeHeight();
   }
 
   toggleHeight() {
@@ -105,17 +100,12 @@ export default class BridgeManager {
 
   setHeightExpanded() {
     this.expanded = true;
-    this.componentManager.setSize("container", "100%", 500);
+    this.recomputeHeight();
   }
 
   setHeightCollapsed() {
     this.expanded = false;
-    this.componentManager.setSize("container", "100%", DefaultHeight);
-  }
-
-  setComponentData(key, value) {
-    this.componentManager.setComponentDataValueForKey(key, value);
-    this.notifyObserversOfUpdate();
+    this.recomputeHeight();
   }
 
   getComponentData(key) {
@@ -134,18 +124,6 @@ export default class BridgeManager {
     return this._didBeginStreaming;
   }
 
-  async saveItem(item) {
-    return this.saveItems([item]);
-  }
-
-  async saveItems(items) {
-    return new Promise((resolve, reject) => {
-      this.componentManager.saveItems(items, (response) => {
-        resolve(response);
-      })
-    })
-  }
-
   filterItems(contentType) {
     return this.items.filter((item) => {
       return item.content_type == contentType;
@@ -156,19 +134,6 @@ export default class BridgeManager {
     return this.filterItems(BridgeManager.FileItemMetadataContentTypeKey);
   }
 
-  categorizedItems() {
-    var types = {};
-    for(var item of this.items) {
-      var array = types[item.content_type];
-      if(!array) {
-        array = [];
-        types[item.content_type] = array;
-      }
-      array.push(item);
-    }
-    return types;
-  }
-
   beginStreamingItem() {
     this._didBeginStreaming = true;
 
@@ -176,11 +141,15 @@ export default class BridgeManager {
       this.handleReceiveNoteMessage(note);
     });
 
-    const contentTypes = [BridgeManager.FileItemMetadataContentTypeKey, BridgeManager.FileSafeCredentialsContentType];
+    const contentTypes = [
+      BridgeManager.FileItemMetadataContentTypeKey,
+      BridgeManager.FileSafeCredentialsContentType,
+      BridgeManager.FileSafeIntegrationContentTypeKey
+    ];
 
     this.componentManager.streamItems(contentTypes, (items) => {
       this.handleStreamItemsMessage(items);
-    })
+    });
   }
 
   handleReceiveNoteMessage(note) {
@@ -189,10 +158,10 @@ export default class BridgeManager {
      // Only update UI on non-metadata updates.
     if(this.note.isMetadataUpdate) { return; }
 
-    this.notifyObserversOfUpdate();
+    this.notifyObserversOfEvent(BridgeManager.BridgeEventReceivedNote);
   }
 
-  handleStreamItemsMessage(items) {
+  async handleStreamItemsMessage(items) {
     for(var item of items) {
       item = new SFItem(item);
 
@@ -213,20 +182,7 @@ export default class BridgeManager {
       }
     }
 
-    if(!this.credentials) {
-      this.loadOrCreateCredentials().then((credentials) => {
-        if(!credentials) {
-          return;
-        }
-        this.authParams = credentials.content.authParams;
-        this.keys = credentials.content.keys;
-        this.credentials = credentials;
-        RelayManager.get().setCredentials(credentials);
-        this.notifyObserversOfUpdate();
-      });
-    }
-
-    this.notifyObserversOfUpdate();
+    this.notifyObserversOfEvent(BridgeManager.BridgeEventReceivedItems);
   }
 
   indexOfItem(item) {
@@ -242,10 +198,27 @@ export default class BridgeManager {
     this.items = this.items.filter((candidate) => {return candidate.uuid !== item.uuid});
   }
 
+  createItem(item, callback) {
+    this.createItems([item], callback);
+  }
+
   createItems(items, callback) {
     for(var item of items) { item.uuid = null; }
     this.componentManager.createItems(items, (createdItems) => {
-      callback(createdItems);
+      callback && callback(createdItems);
+    })
+  }
+
+  async saveItem(item) {
+    return this.saveItems([item]);
+  }
+
+  async saveItems(items) {
+    return new Promise((resolve, reject) => {
+      this.componentManager.saveItems(items, (response) => {
+        resolve(response);
+        this.notifyObserversOfEvent(BridgeManager.BridgeEventSavedItem);
+      })
     })
   }
 
@@ -258,17 +231,15 @@ export default class BridgeManager {
     return -1;
   }
 
+  deleteItem(item, callback) {
+    this.deleteItems([item], callback);
+  }
+
   deleteItems(items, callback) {
     this.componentManager.deleteItems(items, callback);
   }
 
   removeItemFromItems(item) {
     this.items = this.items.filter((candidate) => {return candidate.uuid !== item.uuid});
-  }
-
-  notifyObserversOfUpdate() {
-    for(var observer of this.updateObservers) {
-      observer.callback();
-    }
   }
 }

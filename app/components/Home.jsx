@@ -1,16 +1,14 @@
 import React from 'react';
-import BridgeManager from "../lib/BridgeManager.js";
+import KeysView from "./KeysView";
 import FilesView from "./FilesView.js";
 import IntegrationsView from "./IntegrationsView";
-import KeysView from "./KeysView";
-import ServerSettingsView from "./ServerSettingsView";
 
 export default class Home extends React.Component {
 
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {messages: []};
   }
 
   render() {
@@ -28,10 +26,6 @@ export default class Home extends React.Component {
 
           <div className="panel-section">
             <KeysView/>
-          </div>
-
-          <div className="panel-section">
-            <ServerSettingsView/>
           </div>
 
         </div>
