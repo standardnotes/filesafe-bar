@@ -237,7 +237,7 @@ export default class FilesView extends React.Component {
       this.setState({status: "Decrypting..."});
       return FileManager.get().decryptFile(item, credential).then((data) => {
         Utils.downloadData(Utils.base64toBinary(data.decryptedData), metadata.content.fileName, metadata.content.fileType);
-        this.setState({status: null});
+        this.setState({status: null, selectedFile: null});
       }).catch((decryptionError) => {
         this.flashError("Error decrypting file.");
       })
@@ -284,7 +284,7 @@ export default class FilesView extends React.Component {
           <div className="files">
 
             {this.state.messages.length > 0 &&
-              <div className="panel-section">
+              <div id="messages-container" className="panel-section">
                 <MessagesView messages={this.state.messages}/>
               </div>
             }

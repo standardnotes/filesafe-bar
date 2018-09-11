@@ -3,7 +3,12 @@ import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import RelayManager from "./RelayManager";
 
-const DefaultHeight = 300;
+const BaseHeight = 77;
+
+const FileHeight = 75;
+const MessageHavingHeight = 38;
+const PerMessageHeight = 28;
+const ExpandedHeight = 400;
 
 export default class BridgeManager {
   static FileItemContentTypeKey = "SN|FileSafe|File";
@@ -47,6 +52,34 @@ export default class BridgeManager {
     for(var observer of this.updateObservers) {
       observer.callback(event);
     }
+
+    if(event == BridgeManager.BridgeEventReceivedItems) {
+      this.recomputeHeight();
+    }
+  }
+
+  recomputeHeight() {
+    var totalHeight = BaseHeight;
+
+    var credentials = this.filterItems(BridgeManager.FileSafeCredentialsContentType);
+    if(credentials.length == 0) {
+      totalHeight += PerMessageHeight;
+    }
+
+    var integrations = this.filterItems(BridgeManager.FileSafeIntegrationContentTypeKey);
+    if(integrations.length == 0) {
+      totalHeight += PerMessageHeight;
+    }
+
+    if(integrations.length == 0 || credentials.length == 0) {
+      totalHeight += MessageHavingHeight;
+    }
+
+    if(this.expanded) {
+      totalHeight = ExpandedHeight;
+    }
+
+    this.componentManager.setSize("container", "100%", totalHeight);
   }
 
   initiateBridge(onReady) {
@@ -54,7 +87,7 @@ export default class BridgeManager {
       onReady && onReady();
     });
 
-    this.componentManager.setSize("container", "100%", DefaultHeight);
+    this.recomputeHeight();
   }
 
   toggleHeight() {
@@ -67,12 +100,12 @@ export default class BridgeManager {
 
   setHeightExpanded() {
     this.expanded = true;
-    this.componentManager.setSize("container", "100%", 500);
+    this.recomputeHeight();
   }
 
   setHeightCollapsed() {
     this.expanded = false;
-    this.componentManager.setSize("container", "100%", DefaultHeight);
+    this.recomputeHeight();
   }
 
   getComponentData(key) {
