@@ -66,7 +66,10 @@ export default class CredentialManager {
   didLoadCredentials() {
     BridgeManager.get().notifyObserversOfEvent(BridgeManager.BridgeEventLoadedCredentials);
 
-    this.migrateRelayUrlsFromCredentialsToIntegrations();
+    if(!this.didPerformUrlMigration) {
+      this.migrateRelayUrlsFromCredentialsToIntegrations();
+      this.didPerformUrlMigration = true;
+    }
   }
 
   migrateRelayUrlsFromCredentialsToIntegrations() {
@@ -80,15 +83,24 @@ export default class CredentialManager {
       if(credential.content.relayServerUrl) {
         for(var integration of integrations) {
           integration.content.relayUrl = credential.content.relayServerUrl;
-          delete credential.content.relayServerUrl;
+          credential.content.relayServerUrl = null;
           toSave.push(integration);
+        }
+
+        // Add references to existing files to reference this credential
+        var allFiles = BridgeManager.get().getFileItems();
+        for(var file of allFiles) {
+          file.addItemAsRelationship(credential);
+          toSave.push(file);
         }
 
         toSave.push(credential);
       }
     }
 
-    BridgeManager.get().saveItems(toSave);
+    if(toSave.length > 0) {
+      BridgeManager.get().saveItems(toSave);
+    }
   }
 
   numberOfFilesEncryptedWithCredential(credential) {

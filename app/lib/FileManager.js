@@ -68,17 +68,12 @@ export default class FileManager {
           content: {
             serverMetadata: event.data.metadata,
             fileName: inputFileName,
-            fileType: fileType,
-            references: [
-              {
-                uuid: credential.uuid,
-                content_type: credential.content_type
-              }
-            ]
+            fileType: fileType
           }
         });
 
         metadataItem.addItemAsRelationship(BridgeManager.get().note);
+        metadataItem.addItemAsRelationship(credential);
         BridgeManager.get().createItem(metadataItem);
         resolve();
       });
