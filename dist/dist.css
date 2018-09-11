@@ -787,6 +787,15 @@ body.highlight {
 .faded {
   opacity: 0.5; }
 
+#messages-container {
+  width: 100%; }
+
+#messages {
+  width: 100%; }
+  #messages ul {
+    margin: 0;
+    padding-left: 8px; }
+
 #files-view {
   margin-top: 10px; }
   #files-view #add-file-button-container {
@@ -798,6 +807,7 @@ body.highlight {
     margin-right: 10px; }
   #files-view .files {
     display: flex;
+    flex-direction: row;
     flex-wrap: wrap; }
     #files-view .files .button {
       border: none;
