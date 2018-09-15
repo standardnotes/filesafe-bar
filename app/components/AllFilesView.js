@@ -28,7 +28,7 @@ export default class AllFilesView extends React.Component {
           </div>
         </div>
 
-        {this.state.expanded && 
+        {this.state.expanded &&
           <div className="panel-row">
             <div className="files">
               <FilesView files={this.state.files}/>

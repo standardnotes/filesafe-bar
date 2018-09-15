@@ -89,6 +89,18 @@ export default class IntegrationManager {
   }
 
   deleteIntegration(integrationObject) {
-    BridgeManager.get().deleteItem(integrationObject);
+    var isDefault = integrationObject.content.isDefaultUploadSource;
+    BridgeManager.get().deleteItem(integrationObject, (response) => {
+      if(response.deleted && isDefault) {
+        if(this.integrations.length > 0) {
+          for(var currentIntegration of this.integrations) {
+            if(currentIntegration != integrationObject) {
+              this.setIntegrationAsDefault(currentIntegration);
+              break;
+            }
+          }
+        }
+      }
+    });
   }
 }

@@ -135,7 +135,7 @@ export default class IntegrationsView extends React.Component {
                 }
               </p>
               {hasMultipleIntegrations && !integration.content.isDefaultUploadSource &&
-                <a className="info" onClick={() => {this.setIntegrationAsDefaultUploadSource(integration)}}>Make Default Upload Source</a>
+                <a className="info" onClick={() => {this.setIntegrationAsDefaultUploadSource(integration)}}>Make Default</a>
               }
               <a className="danger" onClick={() => {this.deleteIntegration(integration)}}>Delete</a>
             </div>
