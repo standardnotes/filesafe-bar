@@ -1,6 +1,7 @@
 import React from 'react';
 import KeysView from "./KeysView";
-import FilesView from "./FilesView.js";
+import NoteFilesView from "./NoteFilesView.js";
+import AllFilesView from "./AllFilesView";
 import IntegrationsView from "./IntegrationsView";
 
 export default class Home extends React.Component {
@@ -17,7 +18,7 @@ export default class Home extends React.Component {
         <div className="content">
 
           <div className="panel-section">
-            <FilesView/>
+            <NoteFilesView/>
           </div>
 
           <div className="panel-section">
@@ -26,6 +27,10 @@ export default class Home extends React.Component {
 
           <div className="panel-section">
             <KeysView/>
+          </div>
+
+          <div className="panel-section">
+            <AllFilesView/>
           </div>
 
         </div>
