@@ -38,6 +38,10 @@ export default class BridgeManager {
     return window.default_relay_server_url;
   }
 
+  getPlatform() {
+    return this.componentManager.platform;
+  }
+
   addEventHandler(callback) {
     let observer = {id: Math.random, callback: callback};
     this.updateObservers.push(observer);
