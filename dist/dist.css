@@ -1,3 +1,13 @@
+:root {
+  --sn-stylekit-font-size-small: 0.9rem;
+  --sn-stylekit-font-size-normal: 1.0rem;
+  --sn-stylekit-font-size-large: 1.2rem;
+  --sn-component-background-color: #F6F6F6;
+  --sn-component-foreground-color: black;
+  --sn-component-foreground-highlight-color: #086DD6;
+  --sn-component-outer-border-color: #DDDDDD;
+  --sn-component-inner-border-color: #DDDDDD; }
+
 .sn-component {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -99,6 +109,12 @@
   font-weight: normal;
   opacity: 0.6; }
 
+.sn-component .panel-section .text-content p {
+  margin-bottom: 1rem; }
+
+.sn-component .panel-section .text-content p:first-child {
+  margin-top: 0.3rem; }
+
 .sn-component .panel-row {
   display: flex;
   justify-content: space-between;
@@ -130,6 +146,11 @@
 .sn-component .panel-row p {
   margin: 0;
   padding: 0; }
+
+.sn-component .vertical-rule {
+  background-color: #DDDDDD;
+  height: 1.5rem;
+  width: 1px; }
 
 .sn-component .panel-form {
   width: 100%; }
@@ -254,11 +275,40 @@
   font-weight: bold;
   font-size: 0.85rem; }
 
+.sn-component .font-small {
+  font-size: var(--sn-stylekit-font-size-small); }
+
+.sn-component .font-normal {
+  font-size: var(--sn-stylekit-font-size-normal); }
+
+.sn-component .font-large {
+  font-size: var(--sn-stylekit-font-size-large); }
+
 .sn-component a {
   cursor: pointer; }
 
 .sn-component a.disabled {
   color: #DDDDDD; }
+
+.sn-component a.boxed {
+  border-radius: 3px;
+  color: white;
+  padding: 0.4rem; }
+
+.sn-component a.boxed:hover {
+  text-decoration: none; }
+
+.sn-component a.boxed.info {
+  background-color: #086DD6; }
+
+.sn-component a.boxed.warning {
+  background-color: #f6a200; }
+
+.sn-component a.boxed.danger {
+  background-color: #F80324; }
+
+.sn-component a.boxed.success {
+  background-color: #2B9612; }
 
 .sn-component .wrap {
   word-wrap: break-word; }
@@ -753,6 +803,27 @@
 
 .sn-component .panel-table .table-item.no-border {
   border: none; }
+
+.windows-web ::-webkit-scrollbar, .windows-desktop ::-webkit-scrollbar, .linux-web ::-webkit-scrollbar, .linux-desktop ::-webkit-scrollbar {
+  width: 17px;
+  height: 18px;
+  border-left: 0.5px solid #E7E7E7; }
+
+.windows-web ::-webkit-scrollbar-thumb, .windows-desktop ::-webkit-scrollbar-thumb, .linux-web ::-webkit-scrollbar-thumb, .linux-desktop ::-webkit-scrollbar-thumb {
+  height: 6px;
+  border: 4px solid rgba(0, 0, 0, 0);
+  background-clip: padding-box;
+  -webkit-border-radius: 10px;
+  background-color: #dfdfdf;
+  -webkit-box-shadow: inset -1px -1px 0px rgba(0, 0, 0, 0.05), inset 1px 1px 0px rgba(0, 0, 0, 0.05); }
+
+.windows-web ::-webkit-scrollbar-button, .windows-desktop ::-webkit-scrollbar-button, .linux-web ::-webkit-scrollbar-button, .linux-desktop ::-webkit-scrollbar-button {
+  width: 0;
+  height: 0;
+  display: none; }
+
+.windows-web ::-webkit-scrollbar-corner, .windows-desktop ::-webkit-scrollbar-corner, .linux-web ::-webkit-scrollbar-corner, .linux-desktop ::-webkit-scrollbar-corner {
+  background-color: transparent; }
 html, body {
   font-size: 16px;
   margin: 0;
