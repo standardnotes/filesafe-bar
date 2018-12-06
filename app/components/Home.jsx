@@ -25,15 +25,17 @@ export default class Home extends React.Component {
     // For some reason, scrollbars don't update when the className for this.state.platform is set dynamically.
     // We're doing everything right, but on Chrome Windows, the scrollbars don't reload if adding className after
     // the page already loaded. So this seems to work in manually reloading.
-    var container = document.getElementById("home");
-    var content = container.innerHTML;
-    container.innerHTML= content; 
+    var container = document.getElementById("main-content");
+    container.style.display = "none";
+    setTimeout(() => {
+      container.style.display = "block";
+    }, 0);
   }
 
   render() {
     return (
       <div id="home" className={"panel static " + this.state.platform}>
-        <div className="content">
+        <div id="main-content" className="content">
 
           <div className="panel-section">
             <NoteFilesView/>
