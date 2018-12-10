@@ -91,34 +91,34 @@ export default class IntegrationsView extends React.Component {
 
     return (
       <div>
-        <div className="panel-row">
-          <h4>Integrations ({this.state.integrations.length})</h4>
+        <div className="sk-panel-row">
+          <div className="sk-h3">Integrations ({this.state.integrations.length})</div>
           {!this.state.showInputForm &&
-            <div className="button info no-border" onClick={this.addNewIntegrationClicked}>
-              <div className="info label">Add New</div>
+            <div className="sk-button info no-border" onClick={this.addNewIntegrationClicked}>
+              <div className="sk-label">Add New</div>
             </div>
           }
         </div>
 
         <div id="integrations">
           {this.state.showInputForm &&
-            <div className="notification default">
+            <div className="sk-notification info">
               <strong>New Integration</strong>
               <p>A new tab has opened. After you complete the authentication flow, enter the code you receive below.</p>
               <input
-                className="title"
+                className="title sk-input"
                 type="text"
                 placeholder={"Enter integration code"}
                 value={this.state.integrationCode}
                 onChange={this.handleTextChange}
                 onKeyPress={this.handleKeyPress}
               />
-              <div className="button-group" style={{marginTop: 10}}>
-                <div className="button default" onClick={this.cancelIntegrationForm}>
+              <div className="sk-button-group" style={{marginTop: 10}}>
+                <div className="sk-button neutral" onClick={this.cancelIntegrationForm}>
                   <a className="">Cancel</a>
                 </div>
-                <div className="button info" onClick={this.submitIntegrationCode}>
-                  <a className="info label">Submit</a>
+                <div className="sk-button sk-base" onClick={this.submitIntegrationCode}>
+                  <a className="sk-label">Submit</a>
                 </div>
               </div>
             </div>
@@ -127,13 +127,13 @@ export default class IntegrationsView extends React.Component {
 
         <div>
           {this.state.integrations.map((integration) =>
-            <div className="horizontal-group body-text-color">
-              <p className="body-text-color">
-                <span className={"body-text-color " + (integration.content.isDefaultUploadSource ? "bold" : undefined)}>{this.displayStringForIntegration(integration)}</span>
+            <div className="sk-horizontal-group">
+              <div>
+                <span className={integration.content.isDefaultUploadSource ? "bold" : undefined}>{this.displayStringForIntegration(integration)}</span>
                 {integration.content.isDefaultUploadSource &&
-                  <span className="body-text-color"> (Default)</span>
+                  <span> (Default)</span>
                 }
-              </p>
+              </div>
               {hasMultipleIntegrations && !integration.content.isDefaultUploadSource &&
                 <a className="info" onClick={() => {this.setIntegrationAsDefaultUploadSource(integration)}}>Make Default</a>
               }

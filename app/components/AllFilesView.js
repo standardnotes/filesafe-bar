@@ -21,15 +21,15 @@ export default class AllFilesView extends React.Component {
   render() {
     return (
       <div className="files-view">
-        <div className="panel-row justify-left">
-          <div className="horizontal-group">
-            <h4>All Files ({this.state.files.length})</h4>
+        <div className="sk-panel-row justify-left">
+          <div className="sk-horizontal-group">
+            <div className="sk-h4">All Files ({this.state.files.length})</div>
             <a className="info" onClick={this.toggleVisibility}>{this.state.expanded ? "Hide" : "Show"}</a>
           </div>
         </div>
 
         {this.state.expanded &&
-          <div className="panel-row">
+          <div className="sk-panel-row">
             <div className="files">
               <FilesView files={this.state.files}/>
             </div>

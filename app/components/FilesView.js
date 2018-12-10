@@ -56,21 +56,21 @@ export default class FilesView extends React.Component {
 
   elementForFile = (file) => {
     return (
-      <div className="segmented-buttons">
-        <div onClick={(event) => {this.selectFile(event, file)}} className={"file button info " + (this.isFileSelected(file) ? "selected border-color" : undefined)}>
-          <div className="label">
+      <div className="sk-segmented-buttons">
+        <div onClick={(event) => {this.selectFile(event, file)}} className={"file sk-button info " + (this.isFileSelected(file) ? "selected border-color" : undefined)}>
+          <div className="sk-label">
             {file.content.fileName}
           </div>
         </div>
 
         {this.isFileSelected(file) &&
           [
-            <div onClick={() => {this.downloadFile(file)}} className="button info no-border">
-              <div className="label">Download</div>
+            <div onClick={() => {this.downloadFile(file)}} className="sk-button info no-border">
+              <div className="sk-label">Download</div>
             </div>,
 
-            <div onClick={() => {this.deleteFile(file)}} className="button danger no-border">
-              <div className="label">Delete</div>
+            <div onClick={() => {this.deleteFile(file)}} className="sk-button danger no-border">
+              <div className="sk-label">Delete</div>
             </div>
           ]
         }
@@ -86,9 +86,9 @@ export default class FilesView extends React.Component {
 
     if(this.state.status) {
       elements.push((
-        <div id="file-status" className="horizontal-group">
+        <div id="file-status" className="sk-horizontal-group">
           {hasSpinner &&
-            <div className="spinner info small" />
+            <div className="sk-spinner info small" />
           }
           <div className={statusClass}>{this.state.status}</div>
         </div>

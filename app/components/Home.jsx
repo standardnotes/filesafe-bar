@@ -34,22 +34,22 @@ export default class Home extends React.Component {
 
   render() {
     return (
-      <div id="home" className={"panel static " + this.state.platform}>
-        <div id="main-content" className="content">
+      <div id="home" className={"sk-panel static " + this.state.platform}>
+        <div id="main-content" className="sk-panel-content">
 
-          <div className="panel-section">
+          <div className="sk-panel-section">
             <NoteFilesView/>
           </div>
 
-          <div className="panel-section">
+          <div className="sk-panel-section">
             <IntegrationsView/>
           </div>
 
-          <div className="panel-section">
+          <div className="sk-panel-section">
             <KeysView/>
           </div>
 
-          <div className="panel-section">
+          <div className="sk-panel-section">
             <AllFilesView/>
           </div>
 

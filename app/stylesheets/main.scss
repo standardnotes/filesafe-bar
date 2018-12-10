@@ -20,7 +20,7 @@ body {
 .sn-component {
   user-select: auto !important;
 
- .panel .content {
+ .sk-panel .sk-panel-content {
    padding-top: 6px !important;
 
    p {
@@ -28,15 +28,26 @@ body {
    }
   }
 
-  .button-group .button {
+  .sk-panel-section:first-child {
+    padding-bottom: 1.3rem;
+    margin-bottom: 0 !important;
+  }
+
+  .sk-panel-section:not(:first-child) {
+    padding-top: 0.7rem;
+    padding-bottom: 1.3rem;
+    margin-bottom: 0 !important;
+  }
+
+  .sk-button-group .sk-button {
     vertical-align: middle;
   }
 
-  .button.no-border {
+  .sk-button.no-border {
     border: none;
   }
 
-  .button {
+  .sk-button {
     user-select: none;
   }
 
@@ -65,6 +76,10 @@ body {
   ul {
     margin: 0;
     padding-left: 8px;
+
+    li {
+      line-height: 1.4;
+    }
   }
 }
 
@@ -89,12 +104,12 @@ body {
     flex-direction: row;
     flex-wrap: wrap;
 
-    .button {
+    .sk-button {
       border: none;
       margin-bottom: 10px;
 
       &.selected {
-        @extend .button.info:hover;
+        @extend .sk-button.info:hover;
         margin-right: 0px;
       }
     }

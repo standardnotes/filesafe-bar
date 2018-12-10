@@ -238,29 +238,29 @@ export default class NoteFilesView extends React.Component {
     return (
       <div className="sn-component files-view">
 
-        <div className="panel-row align-top">
+        <div className="sk-panel-row align-top">
 
           <div className="files">
 
             {this.state.messages.length > 0 &&
-              <div id="messages-container" className="panel-section">
+              <div id="messages-container" className="sk-panel-section">
                 <MessagesView messages={this.state.messages}/>
               </div>
             }
 
             {this.state.status &&
-              <div id="file-status" className="horizontal-group">
+              <div id="file-status" className="sk-horizontal-group">
                 {hasSpinner &&
-                  <div className="spinner info small" />
+                  <div className="sk-spinner info small" />
                 }
                 <div className={statusClass}>{this.state.status}</div>
               </div>
             }
             <div id="add-file-button-container">
-              <div className="file button success">
+              <div className="file sk-button info">
                 <label className="no-style">
                   <input type="file" style={{display: "none"}} onChange={(event) => {this.handleDroppedFiles(event.target.files)}} />
-                  <div className="label">Attach File</div>
+                  <div className="sk-label">Attach File</div>
                 </label>
               </div>
             </div>
@@ -268,8 +268,8 @@ export default class NoteFilesView extends React.Component {
             <FilesView files={this.state.files} />
           </div>
 
-          <div className="button default no-border" onClick={this.manageIntegrationsClicked}>
-            <div className="label">{this.state.expanded ? "Collapse" : "Expand"}</div>
+          <div className="sk-button neutral no-border" onClick={this.manageIntegrationsClicked}>
+            <div className="sk-label">{this.state.expanded ? "Collapse" : "Expand"}</div>
           </div>
 
         </div>

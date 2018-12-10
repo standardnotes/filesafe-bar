@@ -53,24 +53,24 @@ export default class KeysView extends React.Component {
   render() {
     return (
       <div>
-        <div className="panel-row">
-          <h4>Keys ({this.state.credentials.length})</h4>
-          <div className="button info no-border" onClick={this.createNewKeys}>
-            <div className="info label">Create New</div>
+        <div className="sk-panel-row">
+          <div className="sk-h3">Keys ({this.state.credentials.length})</div>
+          <div className="sk-button info no-border" onClick={this.createNewKeys}>
+            <div className="sk-label">Create New</div>
           </div>
         </div>
 
         <div>
           {this.state.credentials.map((credential) =>
-            <div className="horizontal-group body-text-color">
-              <p className={"body-text-color " + (credential.content.isDefault ? "bold" : undefined)}>{this.labelForCredential(credential)}</p>
+            <div className="sk-horizontal-group">
+              <div className={credential.content.isDefault ? "bold" : undefined}>{this.labelForCredential(credential)}</div>
               {credential.content.isDefault &&
-                <span className="body-text-color"> (Default)</span>
+                <span> (Default)</span>
               }
             {this.state.credentials.length > 1 && !credential.content.isDefault &&
               <a className="info" onClick={() => {this.setCredentialAsDefault(credential)}}>Make Default</a>
             }
-              <p>({this.numFilesForCredential(credential)} encrypted files)</p>
+              <div>({this.numFilesForCredential(credential)} encrypted files)</div>
               <a className="info" onClick={() => {this.exportCredential(credential)}}>Export</a>
               <a className="danger" onClick={() => {this.deleteCredential(credential)}}>Delete</a>
             </div>

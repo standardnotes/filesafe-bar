@@ -8,7 +8,7 @@ const BaseHeight = 77;
 const FileHeight = 75;
 const MessageHavingHeight = 38;
 const PerMessageHeight = 28;
-const ExpandedHeight = 400;
+const ExpandedHeight = 355;
 
 export default class BridgeManager {
   static FileItemContentTypeKey = "SN|FileSafe|File";
