@@ -106,7 +106,7 @@ export default class IntegrationsView extends React.Component {
               <strong>New Integration</strong>
               <p>A new tab has opened. After you complete the authentication flow, enter the code you receive below.</p>
               <input
-                className="title sk-input"
+                className="title sk-input contrast"
                 type="text"
                 placeholder={"Enter integration code"}
                 value={this.state.integrationCode}

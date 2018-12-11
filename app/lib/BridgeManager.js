@@ -3,12 +3,12 @@ import "standard-file-js/dist/regenerator.js";
 import { StandardFile, SFAbstractCrypto, SFItemTransformer, SFHttpManager, SFItem } from 'standard-file-js';
 import RelayManager from "./RelayManager";
 
-const BaseHeight = 77;
+const BaseHeight = 60;
 
 const FileHeight = 75;
-const MessageHavingHeight = 38;
-const PerMessageHeight = 28;
-const ExpandedHeight = 355;
+const MessageHavingHeight = 28;
+const PerMessageHeight = 22;
+const ExpandedHeight = 305;
 
 export default class BridgeManager {
   static FileItemContentTypeKey = "SN|FileSafe|File";

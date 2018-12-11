@@ -8868,12 +8868,12 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var BaseHeight = 77;
+var BaseHeight = 60;
 
 var FileHeight = 75;
-var MessageHavingHeight = 38;
-var PerMessageHeight = 28;
-var ExpandedHeight = 400;
+var MessageHavingHeight = 28;
+var PerMessageHeight = 22;
+var ExpandedHeight = 305;
 
 var BridgeManager = function () {
   _createClass(BridgeManager, null, [{
@@ -10792,15 +10792,15 @@ var FilesView = function (_React$Component) {
     _this.elementForFile = function (file) {
       return _react2.default.createElement(
         'div',
-        { className: 'segmented-buttons' },
+        { className: 'sk-segmented-buttons' },
         _react2.default.createElement(
           'div',
           { onClick: function onClick(event) {
               _this.selectFile(event, file);
-            }, className: "file button info " + (_this.isFileSelected(file) ? "selected border-color" : undefined) },
+            }, className: "file sk-button info " + (_this.isFileSelected(file) ? "selected border-color" : undefined) },
           _react2.default.createElement(
             'div',
-            { className: 'label' },
+            { className: 'sk-label' },
             file.content.fileName
           )
         ),
@@ -10808,20 +10808,20 @@ var FilesView = function (_React$Component) {
           'div',
           { onClick: function onClick() {
               _this.downloadFile(file);
-            }, className: 'button info no-border' },
+            }, className: 'sk-button info no-border' },
           _react2.default.createElement(
             'div',
-            { className: 'label' },
+            { className: 'sk-label' },
             'Download'
           )
         ), _react2.default.createElement(
           'div',
           { onClick: function onClick() {
               _this.deleteFile(file);
-            }, className: 'button danger no-border' },
+            }, className: 'sk-button danger no-border' },
           _react2.default.createElement(
             'div',
-            { className: 'label' },
+            { className: 'sk-label' },
             'Delete'
           )
         )]
@@ -10855,8 +10855,8 @@ var FilesView = function (_React$Component) {
       if (this.state.status) {
         elements.push(_react2.default.createElement(
           'div',
-          { id: 'file-status', className: 'horizontal-group' },
-          hasSpinner && _react2.default.createElement('div', { className: 'spinner info small' }),
+          { id: 'file-status', className: 'sk-horizontal-group' },
+          hasSpinner && _react2.default.createElement('div', { className: 'sk-spinner info small' }),
           _react2.default.createElement(
             'div',
             { className: statusClass },
@@ -10905,54 +10905,54 @@ _reactDom2.default.render(_react2.default.createElement(_App2.default, null), do
 
 // https://tc39.github.io/ecma262/#sec-array.prototype.includes
 if (!Array.prototype.includes) {
-      Object.defineProperty(Array.prototype, 'includes', {
-            value: function value(searchElement, fromIndex) {
+  Object.defineProperty(Array.prototype, 'includes', {
+    value: function value(searchElement, fromIndex) {
 
-                  if (this == null) {
-                        throw new TypeError('"this" is null or not defined');
-                  }
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
 
-                  // 1. Let O be ? ToObject(this value).
-                  var o = Object(this);
+      // 1. Let O be ? ToObject(this value).
+      var o = Object(this);
 
-                  // 2. Let len be ? ToLength(? Get(O, "length")).
-                  var len = o.length >>> 0;
+      // 2. Let len be ? ToLength(? Get(O, "length")).
+      var len = o.length >>> 0;
 
-                  // 3. If len is 0, return false.
-                  if (len === 0) {
-                        return false;
-                  }
+      // 3. If len is 0, return false.
+      if (len === 0) {
+        return false;
+      }
 
-                  // 4. Let n be ? ToInteger(fromIndex).
-                  //    (If fromIndex is undefined, this step produces the value 0.)
-                  var n = fromIndex | 0;
+      // 4. Let n be ? ToInteger(fromIndex).
+      //    (If fromIndex is undefined, this step produces the value 0.)
+      var n = fromIndex | 0;
 
-                  // 5. If n ≥ 0, then
-                  //  a. Let k be n.
-                  // 6. Else n < 0,
-                  //  a. Let k be len + n.
-                  //  b. If k < 0, let k be 0.
-                  var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+      // 5. If n ≥ 0, then
+      //  a. Let k be n.
+      // 6. Else n < 0,
+      //  a. Let k be len + n.
+      //  b. If k < 0, let k be 0.
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
 
-                  function sameValueZero(x, y) {
-                        return x === y || typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y);
-                  }
+      function sameValueZero(x, y) {
+        return x === y || typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y);
+      }
 
-                  // 7. Repeat, while k < len
-                  while (k < len) {
-                        // a. Let elementK be the result of ? Get(O, ! ToString(k)).
-                        // b. If SameValueZero(searchElement, elementK) is true, return true.
-                        if (sameValueZero(o[k], searchElement)) {
-                              return true;
-                        }
-                        // c. Increase k by 1.
-                        k++;
-                  }
+      // 7. Repeat, while k < len
+      while (k < len) {
+        // a. Let elementK be the result of ? Get(O, ! ToString(k)).
+        // b. If SameValueZero(searchElement, elementK) is true, return true.
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        // c. Increase k by 1.
+        k++;
+      }
 
-                  // 8. Return false
-                  return false;
-            }
-      });
+      // 8. Return false
+      return false;
+    }
+  });
 }
 
 /***/ }),
@@ -11794,28 +11794,28 @@ var Home = function (_React$Component) {
     value: function render() {
       return _react2.default.createElement(
         "div",
-        { id: "home", className: "panel static " + this.state.platform },
+        { id: "home", className: "sk-panel static " + this.state.platform },
         _react2.default.createElement(
           "div",
-          { id: "main-content", className: "content" },
+          { id: "main-content", className: "sk-panel-content" },
           _react2.default.createElement(
             "div",
-            { className: "panel-section" },
+            { className: "sk-panel-section" },
             _react2.default.createElement(_NoteFilesView2.default, null)
           ),
           _react2.default.createElement(
             "div",
-            { className: "panel-section" },
+            { className: "sk-panel-section" },
             _react2.default.createElement(_IntegrationsView2.default, null)
           ),
           _react2.default.createElement(
             "div",
-            { className: "panel-section" },
+            { className: "sk-panel-section" },
             _react2.default.createElement(_KeysView2.default, null)
           ),
           _react2.default.createElement(
             "div",
-            { className: "panel-section" },
+            { className: "sk-panel-section" },
             _react2.default.createElement(_AllFilesView2.default, null)
           )
         )
@@ -11934,20 +11934,20 @@ var KeysView = function (_React$Component) {
         null,
         _react2.default.createElement(
           'div',
-          { className: 'panel-row' },
+          { className: 'sk-panel-row' },
           _react2.default.createElement(
-            'h4',
-            null,
+            'div',
+            { className: 'sk-h3' },
             'Keys (',
             this.state.credentials.length,
             ')'
           ),
           _react2.default.createElement(
             'div',
-            { className: 'button info no-border', onClick: this.createNewKeys },
+            { className: 'sk-button info no-border', onClick: this.createNewKeys },
             _react2.default.createElement(
               'div',
-              { className: 'info label' },
+              { className: 'sk-label' },
               'Create New'
             )
           )
@@ -11958,15 +11958,15 @@ var KeysView = function (_React$Component) {
           this.state.credentials.map(function (credential) {
             return _react2.default.createElement(
               'div',
-              { className: 'horizontal-group body-text-color' },
+              { className: 'sk-horizontal-group' },
               _react2.default.createElement(
-                'p',
-                { className: "body-text-color " + (credential.content.isDefault ? "bold" : undefined) },
+                'div',
+                { className: credential.content.isDefault ? "bold" : undefined },
                 _this2.labelForCredential(credential)
               ),
               credential.content.isDefault && _react2.default.createElement(
                 'span',
-                { className: 'body-text-color' },
+                null,
                 ' (Default)'
               ),
               _this2.state.credentials.length > 1 && !credential.content.isDefault && _react2.default.createElement(
@@ -11977,7 +11977,7 @@ var KeysView = function (_React$Component) {
                 'Make Default'
               ),
               _react2.default.createElement(
-                'p',
+                'div',
                 null,
                 '(',
                 _this2.numFilesForCredential(credential),
@@ -13140,19 +13140,19 @@ var NoteFilesView = function (_React$Component) {
         { className: 'sn-component files-view' },
         _react2.default.createElement(
           'div',
-          { className: 'panel-row align-top' },
+          { className: 'sk-panel-row align-top' },
           _react2.default.createElement(
             'div',
             { className: 'files' },
             this.state.messages.length > 0 && _react2.default.createElement(
               'div',
-              { id: 'messages-container', className: 'panel-section' },
+              { id: 'messages-container', className: 'sk-panel-section' },
               _react2.default.createElement(_MessagesView2.default, { messages: this.state.messages })
             ),
             this.state.status && _react2.default.createElement(
               'div',
-              { id: 'file-status', className: 'horizontal-group' },
-              hasSpinner && _react2.default.createElement('div', { className: 'spinner info small' }),
+              { id: 'file-status', className: 'sk-horizontal-group' },
+              hasSpinner && _react2.default.createElement('div', { className: 'sk-spinner info small' }),
               _react2.default.createElement(
                 'div',
                 { className: statusClass },
@@ -13164,7 +13164,7 @@ var NoteFilesView = function (_React$Component) {
               { id: 'add-file-button-container' },
               _react2.default.createElement(
                 'div',
-                { className: 'file button success' },
+                { className: 'file sk-button info' },
                 _react2.default.createElement(
                   'label',
                   { className: 'no-style' },
@@ -13173,7 +13173,7 @@ var NoteFilesView = function (_React$Component) {
                     } }),
                   _react2.default.createElement(
                     'div',
-                    { className: 'label' },
+                    { className: 'sk-label' },
                     'Attach File'
                   )
                 )
@@ -13183,10 +13183,10 @@ var NoteFilesView = function (_React$Component) {
           ),
           _react2.default.createElement(
             'div',
-            { className: 'button default no-border', onClick: this.manageIntegrationsClicked },
+            { className: 'sk-button neutral no-border', onClick: this.manageIntegrationsClicked },
             _react2.default.createElement(
               'div',
-              { className: 'label' },
+              { className: 'sk-label' },
               this.state.expanded ? "Collapse" : "Expand"
             )
           )
@@ -13453,13 +13453,13 @@ var AllFilesView = function (_React$Component) {
         { className: "files-view" },
         _react2.default.createElement(
           "div",
-          { className: "panel-row justify-left" },
+          { className: "sk-panel-row justify-left" },
           _react2.default.createElement(
             "div",
-            { className: "horizontal-group" },
+            { className: "sk-horizontal-group" },
             _react2.default.createElement(
-              "h4",
-              null,
+              "div",
+              { className: "sk-h4" },
               "All Files (",
               this.state.files.length,
               ")"
@@ -13473,7 +13473,7 @@ var AllFilesView = function (_React$Component) {
         ),
         this.state.expanded && _react2.default.createElement(
           "div",
-          { className: "panel-row" },
+          { className: "sk-panel-row" },
           _react2.default.createElement(
             "div",
             { className: "files" },
@@ -13650,20 +13650,20 @@ var IntegrationsView = function (_React$Component) {
         null,
         _react2.default.createElement(
           'div',
-          { className: 'panel-row' },
+          { className: 'sk-panel-row' },
           _react2.default.createElement(
-            'h4',
-            null,
+            'div',
+            { className: 'sk-h3' },
             'Integrations (',
             this.state.integrations.length,
             ')'
           ),
           !this.state.showInputForm && _react2.default.createElement(
             'div',
-            { className: 'button info no-border', onClick: this.addNewIntegrationClicked },
+            { className: 'sk-button info no-border', onClick: this.addNewIntegrationClicked },
             _react2.default.createElement(
               'div',
-              { className: 'info label' },
+              { className: 'sk-label' },
               'Add New'
             )
           )
@@ -13673,7 +13673,7 @@ var IntegrationsView = function (_React$Component) {
           { id: 'integrations' },
           this.state.showInputForm && _react2.default.createElement(
             'div',
-            { className: 'notification default' },
+            { className: 'sk-notification info' },
             _react2.default.createElement(
               'strong',
               null,
@@ -13685,7 +13685,7 @@ var IntegrationsView = function (_React$Component) {
               'A new tab has opened. After you complete the authentication flow, enter the code you receive below.'
             ),
             _react2.default.createElement('input', {
-              className: 'title',
+              className: 'title sk-input contrast',
               type: 'text',
               placeholder: "Enter integration code",
               value: this.state.integrationCode,
@@ -13694,10 +13694,10 @@ var IntegrationsView = function (_React$Component) {
             }),
             _react2.default.createElement(
               'div',
-              { className: 'button-group', style: { marginTop: 10 } },
+              { className: 'sk-button-group', style: { marginTop: 10 } },
               _react2.default.createElement(
                 'div',
-                { className: 'button default', onClick: this.cancelIntegrationForm },
+                { className: 'sk-button neutral', onClick: this.cancelIntegrationForm },
                 _react2.default.createElement(
                   'a',
                   { className: '' },
@@ -13706,10 +13706,10 @@ var IntegrationsView = function (_React$Component) {
               ),
               _react2.default.createElement(
                 'div',
-                { className: 'button info', onClick: this.submitIntegrationCode },
+                { className: 'sk-button sk-base', onClick: this.submitIntegrationCode },
                 _react2.default.createElement(
                   'a',
-                  { className: 'info label' },
+                  { className: 'sk-label' },
                   'Submit'
                 )
               )
@@ -13722,18 +13722,18 @@ var IntegrationsView = function (_React$Component) {
           this.state.integrations.map(function (integration) {
             return _react2.default.createElement(
               'div',
-              { className: 'horizontal-group body-text-color' },
+              { className: 'sk-horizontal-group' },
               _react2.default.createElement(
-                'p',
-                { className: 'body-text-color' },
+                'div',
+                null,
                 _react2.default.createElement(
                   'span',
-                  { className: "body-text-color " + (integration.content.isDefaultUploadSource ? "bold" : undefined) },
+                  { className: integration.content.isDefaultUploadSource ? "bold" : undefined },
                   _this2.displayStringForIntegration(integration)
                 ),
                 integration.content.isDefaultUploadSource && _react2.default.createElement(
                   'span',
-                  { className: 'body-text-color' },
+                  null,
                   ' (Default)'
                 )
               ),
