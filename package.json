@@ -1,6 +1,6 @@
 {
   "name": "sn-filesafe",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "dist/dist.js",
   "scripts": {
     "lint": "eslint --cache --ignore-path .gitignore --ext .jsx,.js --format=node_modules/eslint-formatter-pretty .",
@@ -42,9 +42,9 @@
     "react": "16.0.x",
     "react-dom": "16.0.x",
     "sass-loader": "^6.0.6",
-    "sn-components-api": "1.1.11",
-    "sn-stylekit": "2.0.4",
-    "standard-file-js": "0.3.14",
+    "sn-components-api": "1.2.2",
+    "sn-stylekit": "2.0.10",
+    "standard-file-js": "0.3.21",
     "style-loader": "~0.13.1",
     "validate-commit-msg": "2.x",
     "webpack": "^3.8.1",
