@@ -10319,8 +10319,12 @@ var FileManager = function () {
   }, {
     key: "filesForCurrentNote",
     value: function filesForCurrentNote() {
+      var note = _BridgeManager2.default.get().note;
+      if (!note) {
+        return [];
+      }
       return _BridgeManager2.default.get().getFileItems().filter(function (metadataItem) {
-        return metadataItem.hasRelationshipWithItem(_BridgeManager2.default.get().note);
+        return metadataItem.hasRelationshipWithItem(note);
       });
     }
   }, {

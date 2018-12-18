@@ -25,8 +25,12 @@ export default class FileManager {
 
   // Returns the metadata objects associated with the current note
   filesForCurrentNote() {
+    let note = BridgeManager.get().note;
+    if(!note) {
+      return [];
+    }
     return BridgeManager.get().getFileItems().filter((metadataItem) => {
-      return metadataItem.hasRelationshipWithItem(BridgeManager.get().note);
+      return metadataItem.hasRelationshipWithItem(note);
     })
   }
 
