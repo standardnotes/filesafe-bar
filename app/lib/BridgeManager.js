@@ -88,6 +88,7 @@ export default class BridgeManager {
 
   initiateBridge(onReady) {
     this.componentManager = new ComponentManager([], () => {
+      // on ready
       onReady && onReady();
     });
 

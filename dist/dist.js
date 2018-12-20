@@ -9181,6 +9181,7 @@ var BridgeManager = function () {
     key: 'initiateBridge',
     value: function initiateBridge(onReady) {
       this.componentManager = new _snComponentsApi2.default([], function () {
+        // on ready
         onReady && onReady();
       });
 
@@ -11976,19 +11977,25 @@ var Home = function (_React$Component) {
       var platform = _BridgeManager2.default.get().getPlatform();
       if (_this.state.platform != platform) {
         _this.setState({ platform: platform });
-        _this.reloadScrollBars();
+        _this.applyPlatformClass();
       }
     });
     return _this;
   }
 
   _createClass(Home, [{
+    key: "applyPlatformClass",
+    value: function applyPlatformClass() {
+      document.querySelector("html").classList.add(this.state.platform);
+      this.reloadScrollBars();
+    }
+  }, {
     key: "reloadScrollBars",
     value: function reloadScrollBars() {
       // For some reason, scrollbars don't update when the className for this.state.platform is set dynamically.
       // We're doing everything right, but on Chrome Windows, the scrollbars don't reload if adding className after
       // the page already loaded. So this seems to work in manually reloading.
-      var container = document.getElementById("main-content");
+      var container = document.querySelector("body");
       container.style.display = "none";
       setTimeout(function () {
         container.style.display = "block";
@@ -11999,7 +12006,7 @@ var Home = function (_React$Component) {
     value: function render() {
       return _react2.default.createElement(
         "div",
-        { id: "home", className: "sk-panel static " + this.state.platform },
+        { id: "home", className: "sk-panel static" },
         _react2.default.createElement(
           "div",
           { id: "main-content", className: "sk-panel-content" },

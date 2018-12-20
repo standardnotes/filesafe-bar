@@ -15,17 +15,22 @@ export default class Home extends React.Component {
     BridgeManager.get().addEventHandler((event) => {
       let platform = BridgeManager.get().getPlatform();
       if(this.state.platform != platform) {
-        this.setState({platform:platform});
-        this.reloadScrollBars();
+        this.setState({platform: platform});
+        this.applyPlatformClass();
       }
     })
+  }
+
+  applyPlatformClass() {
+    document.querySelector("html").classList.add(this.state.platform);
+    this.reloadScrollBars();
   }
 
   reloadScrollBars() {
     // For some reason, scrollbars don't update when the className for this.state.platform is set dynamically.
     // We're doing everything right, but on Chrome Windows, the scrollbars don't reload if adding className after
     // the page already loaded. So this seems to work in manually reloading.
-    var container = document.getElementById("main-content");
+    var container = document.querySelector("body");
     container.style.display = "none";
     setTimeout(() => {
       container.style.display = "block";
@@ -34,7 +39,7 @@ export default class Home extends React.Component {
 
   render() {
     return (
-      <div id="home" className={"sk-panel static " + this.state.platform}>
+      <div id="home" className={"sk-panel static"}>
         <div id="main-content" className="sk-panel-content">
 
           <div className="sk-panel-section">

@@ -1915,7 +1915,8 @@ body.highlight {
   width: 100%; }
   #messages ul {
     margin: 0;
-    padding-left: 8px; }
+    padding-left: 8px;
+    list-style-position: inside; }
     #messages ul li {
       line-height: 1.4; }
 
