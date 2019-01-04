@@ -12170,44 +12170,48 @@ var KeysView = function (_React$Component) {
           this.state.credentials.map(function (credential) {
             return _react2.default.createElement(
               'div',
-              { className: 'sk-horizontal-group' },
+              { className: 'sk-panel-row' },
               _react2.default.createElement(
                 'div',
-                { className: credential.content.isDefault ? "bold" : undefined },
-                _this2.labelForCredential(credential)
-              ),
-              credential.content.isDefault && _react2.default.createElement(
-                'span',
-                null,
-                ' (Default)'
-              ),
-              _this2.state.credentials.length > 1 && !credential.content.isDefault && _react2.default.createElement(
-                'a',
-                { className: 'info', onClick: function onClick() {
-                    _this2.setCredentialAsDefault(credential);
-                  } },
-                'Make Default'
-              ),
-              _react2.default.createElement(
-                'div',
-                null,
-                '(',
-                _this2.numFilesForCredential(credential),
-                ' encrypted files)'
-              ),
-              _react2.default.createElement(
-                'a',
-                { className: 'info', onClick: function onClick() {
-                    _this2.exportCredential(credential);
-                  } },
-                'Export'
-              ),
-              _react2.default.createElement(
-                'a',
-                { className: 'danger', onClick: function onClick() {
-                    _this2.deleteCredential(credential);
-                  } },
-                'Delete'
+                { className: 'sk-horizontal-group' },
+                _react2.default.createElement(
+                  'div',
+                  { className: credential.content.isDefault ? "bold" : undefined },
+                  _this2.labelForCredential(credential)
+                ),
+                credential.content.isDefault && _react2.default.createElement(
+                  'span',
+                  null,
+                  ' (Default)'
+                ),
+                _this2.state.credentials.length > 1 && !credential.content.isDefault && _react2.default.createElement(
+                  'a',
+                  { className: 'info', onClick: function onClick() {
+                      _this2.setCredentialAsDefault(credential);
+                    } },
+                  'Make Default'
+                ),
+                _react2.default.createElement(
+                  'div',
+                  null,
+                  '(',
+                  _this2.numFilesForCredential(credential),
+                  ' encrypted files)'
+                ),
+                _react2.default.createElement(
+                  'a',
+                  { className: 'info', onClick: function onClick() {
+                      _this2.exportCredential(credential);
+                    } },
+                  'Export'
+                ),
+                _react2.default.createElement(
+                  'a',
+                  { className: 'danger', onClick: function onClick() {
+                      _this2.deleteCredential(credential);
+                    } },
+                  'Delete'
+                )
               )
             );
           })
@@ -14024,34 +14028,38 @@ var IntegrationsView = function (_React$Component) {
           this.state.integrations.map(function (integration) {
             return _react2.default.createElement(
               'div',
-              { className: 'sk-horizontal-group' },
+              { className: 'sk-panel-row' },
               _react2.default.createElement(
                 'div',
-                null,
+                { className: 'sk-horizontal-group' },
                 _react2.default.createElement(
-                  'span',
-                  { className: integration.content.isDefaultUploadSource ? "bold" : undefined },
-                  _this2.displayStringForIntegration(integration)
-                ),
-                integration.content.isDefaultUploadSource && _react2.default.createElement(
-                  'span',
+                  'div',
                   null,
-                  ' (Default)'
+                  _react2.default.createElement(
+                    'span',
+                    { className: integration.content.isDefaultUploadSource ? "bold" : undefined },
+                    _this2.displayStringForIntegration(integration)
+                  ),
+                  integration.content.isDefaultUploadSource && _react2.default.createElement(
+                    'span',
+                    null,
+                    ' (Default)'
+                  )
+                ),
+                hasMultipleIntegrations && !integration.content.isDefaultUploadSource && _react2.default.createElement(
+                  'a',
+                  { className: 'info', onClick: function onClick() {
+                      _this2.setIntegrationAsDefaultUploadSource(integration);
+                    } },
+                  'Make Default'
+                ),
+                _react2.default.createElement(
+                  'a',
+                  { className: 'danger', onClick: function onClick() {
+                      _this2.deleteIntegration(integration);
+                    } },
+                  'Delete'
                 )
-              ),
-              hasMultipleIntegrations && !integration.content.isDefaultUploadSource && _react2.default.createElement(
-                'a',
-                { className: 'info', onClick: function onClick() {
-                    _this2.setIntegrationAsDefaultUploadSource(integration);
-                  } },
-                'Make Default'
-              ),
-              _react2.default.createElement(
-                'a',
-                { className: 'danger', onClick: function onClick() {
-                    _this2.deleteIntegration(integration);
-                  } },
-                'Delete'
               )
             );
           })

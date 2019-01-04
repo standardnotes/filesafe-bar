@@ -127,17 +127,19 @@ export default class IntegrationsView extends React.Component {
 
         <div>
           {this.state.integrations.map((integration) =>
-            <div className="sk-horizontal-group">
-              <div>
-                <span className={integration.content.isDefaultUploadSource ? "bold" : undefined}>{this.displayStringForIntegration(integration)}</span>
-                {integration.content.isDefaultUploadSource &&
-                  <span> (Default)</span>
+            <div className="sk-panel-row">
+              <div className="sk-horizontal-group">
+                <div>
+                  <span className={integration.content.isDefaultUploadSource ? "bold" : undefined}>{this.displayStringForIntegration(integration)}</span>
+                  {integration.content.isDefaultUploadSource &&
+                    <span> (Default)</span>
+                  }
+                </div>
+                {hasMultipleIntegrations && !integration.content.isDefaultUploadSource &&
+                  <a className="info" onClick={() => {this.setIntegrationAsDefaultUploadSource(integration)}}>Make Default</a>
                 }
+                <a className="danger" onClick={() => {this.deleteIntegration(integration)}}>Delete</a>
               </div>
-              {hasMultipleIntegrations && !integration.content.isDefaultUploadSource &&
-                <a className="info" onClick={() => {this.setIntegrationAsDefaultUploadSource(integration)}}>Make Default</a>
-              }
-              <a className="danger" onClick={() => {this.deleteIntegration(integration)}}>Delete</a>
             </div>
           )}
         </div>
