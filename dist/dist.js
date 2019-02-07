@@ -13228,24 +13228,23 @@ var NoteFilesView = function (_React$Component) {
                               data = e.target.result;
 
                               if (!decrypt) {
-                                _context3.next = 8;
+                                _context3.next = 7;
                                 break;
                               }
 
                               data = JSON.parse(data);
                               item = data.items[0];
 
-                              _this5.decryptDraggedFile(item);
-                              resolve();
-                              _context3.next = 21;
+                              _this5.decryptDraggedFile(item).then(resolve);
+                              _context3.next = 20;
                               break;
 
-                            case 8:
+                            case 7:
                               arrayBuffer = data;
                               bytes = arrayBuffer.byteLength;
 
                               if (!(bytes > ByteLimit)) {
-                                _context3.next = 15;
+                                _context3.next = 14;
                                 break;
                               }
 
@@ -13254,19 +13253,19 @@ var NoteFilesView = function (_React$Component) {
                               resolve();
                               return _context3.abrupt('return');
 
-                            case 15:
-                              _context3.next = 17;
+                            case 14:
+                              _context3.next = 16;
                               return SFJS.crypto.arrayBufferToBase64(arrayBuffer);
 
-                            case 17:
+                            case 16:
                               string = _context3.sent;
-                              _context3.next = 20;
+                              _context3.next = 19;
                               return _this5.encryptFile(string, file.name, file.type);
 
-                            case 20:
+                            case 19:
                               resolve();
 
-                            case 21:
+                            case 20:
                             case 'end':
                               return _context3.stop();
                           }
@@ -13306,29 +13305,125 @@ var NoteFilesView = function (_React$Component) {
   }, {
     key: 'decryptDraggedFile',
     value: function () {
-      var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(item) {
+      var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(item) {
         var _this6 = this;
 
-        return regeneratorRuntime.wrap(function _callee5$(_context5) {
+        var credentials, decryptWithCredential, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, credential, success;
+
+        return regeneratorRuntime.wrap(function _callee6$(_context6) {
           while (1) {
-            switch (_context5.prev = _context5.next) {
+            switch (_context6.prev = _context6.next) {
               case 0:
                 this.setState({ status: "Decrypting..." });
 
-                return _context5.abrupt('return', _FileManager2.default.get().decryptFile(item).then(function (data) {
-                  var item = data.decryptedItem;
-                  _Utils2.default.downloadData(_Utils2.default.base64toBinary(data.decryptedData), item.content.fileName, item.content.fileType);
-                  _this6.setState({ status: null });
-                }).catch(function (decryptionError) {
-                  _this6.flashError("Error decrypting file.");
-                }));
+                credentials = _CredentialManager2.default.get().getAllCredentials();
 
-              case 2:
+                decryptWithCredential = function () {
+                  var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(credential) {
+                    return regeneratorRuntime.wrap(function _callee5$(_context5) {
+                      while (1) {
+                        switch (_context5.prev = _context5.next) {
+                          case 0:
+                            return _context5.abrupt('return', new Promise(function (resolve, reject) {
+                              _FileManager2.default.get().decryptFile(item, credential).then(function (data) {
+                                var item = data.decryptedItem;
+                                _Utils2.default.downloadData(_Utils2.default.base64toBinary(data.decryptedData), item.content.fileName, item.content.fileType);
+                                _this6.setState({ status: null });
+                                resolve(true);
+                              }).catch(function (decryptionError) {
+                                console.error("Error decrypting:", decryptionError);
+                                _this6.flashError("Error decrypting file.");
+                                reject(false);
+                              });
+                            }));
+
+                          case 1:
+                          case 'end':
+                            return _context5.stop();
+                        }
+                      }
+                    }, _callee5, _this6);
+                  }));
+
+                  return function decryptWithCredential(_x5) {
+                    return _ref6.apply(this, arguments);
+                  };
+                }();
+
+                // Try all credentials until one succeeds
+
+
+                _iteratorNormalCompletion2 = true;
+                _didIteratorError2 = false;
+                _iteratorError2 = undefined;
+                _context6.prev = 6;
+                _iterator2 = credentials[Symbol.iterator]();
+
+              case 8:
+                if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+                  _context6.next = 18;
+                  break;
+                }
+
+                credential = _step2.value;
+                _context6.next = 12;
+                return decryptWithCredential(credential);
+
+              case 12:
+                success = _context6.sent;
+
+                if (!success) {
+                  _context6.next = 15;
+                  break;
+                }
+
+                return _context6.abrupt('return');
+
+              case 15:
+                _iteratorNormalCompletion2 = true;
+                _context6.next = 8;
+                break;
+
+              case 18:
+                _context6.next = 24;
+                break;
+
+              case 20:
+                _context6.prev = 20;
+                _context6.t0 = _context6['catch'](6);
+                _didIteratorError2 = true;
+                _iteratorError2 = _context6.t0;
+
+              case 24:
+                _context6.prev = 24;
+                _context6.prev = 25;
+
+                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                  _iterator2.return();
+                }
+
+              case 27:
+                _context6.prev = 27;
+
+                if (!_didIteratorError2) {
+                  _context6.next = 30;
+                  break;
+                }
+
+                throw _iteratorError2;
+
+              case 30:
+                return _context6.finish(27);
+
+              case 31:
+                return _context6.finish(24);
+
+              case 32:
               case 'end':
-                return _context5.stop();
+                return _context6.stop();
             }
           }
-        }, _callee5, this);
+        }, _callee6, this, [[6, 20, 24, 32], [25,, 27, 31]]);
       }));
 
       function decryptDraggedFile(_x4) {
@@ -13340,12 +13435,12 @@ var NoteFilesView = function (_React$Component) {
   }, {
     key: 'wait',
     value: function () {
-      var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(seconds) {
-        return regeneratorRuntime.wrap(function _callee6$(_context6) {
+      var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(seconds) {
+        return regeneratorRuntime.wrap(function _callee7$(_context7) {
           while (1) {
-            switch (_context6.prev = _context6.next) {
+            switch (_context7.prev = _context7.next) {
               case 0:
-                return _context6.abrupt('return', new Promise(function (resolve, reject) {
+                return _context7.abrupt('return', new Promise(function (resolve, reject) {
                   setTimeout(function () {
                     resolve();
                   }, seconds * 1000.0);
@@ -13353,14 +13448,14 @@ var NoteFilesView = function (_React$Component) {
 
               case 1:
               case 'end':
-                return _context6.stop();
+                return _context7.stop();
             }
           }
-        }, _callee6, this);
+        }, _callee7, this);
       }));
 
-      function wait(_x5) {
-        return _ref6.apply(this, arguments);
+      function wait(_x6) {
+        return _ref7.apply(this, arguments);
       }
 
       return wait;
@@ -13368,29 +13463,29 @@ var NoteFilesView = function (_React$Component) {
   }, {
     key: 'encryptFile',
     value: function () {
-      var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(data, inputFileName, fileType) {
+      var _ref8 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(data, inputFileName, fileType) {
         var _this7 = this;
 
         var credential;
-        return regeneratorRuntime.wrap(function _callee8$(_context8) {
+        return regeneratorRuntime.wrap(function _callee9$(_context9) {
           while (1) {
-            switch (_context8.prev = _context8.next) {
+            switch (_context9.prev = _context9.next) {
               case 0:
                 this.setState({ status: "Encrypting..." });
 
                 credential = _CredentialManager2.default.get().getDefaultCredentials();
-                return _context8.abrupt('return', _FileManager2.default.get().encryptFile(data, inputFileName, fileType, credential).then(function () {
-                  var _ref8 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(itemParams) {
-                    return regeneratorRuntime.wrap(function _callee7$(_context7) {
+                return _context9.abrupt('return', _FileManager2.default.get().encryptFile(data, inputFileName, fileType, credential).then(function () {
+                  var _ref9 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(itemParams) {
+                    return regeneratorRuntime.wrap(function _callee8$(_context8) {
                       while (1) {
-                        switch (_context7.prev = _context7.next) {
+                        switch (_context8.prev = _context8.next) {
                           case 0:
                             _this7.setState({ status: "Uploading..." });
-                            _context7.next = 3;
+                            _context8.next = 3;
                             return _this7.wait(0.5);
 
                           case 3:
-                            return _context7.abrupt('return', _FileManager2.default.get().uploadFile(itemParams, inputFileName, fileType, credential).then(function () {
+                            return _context8.abrupt('return', _FileManager2.default.get().uploadFile(itemParams, inputFileName, fileType, credential).then(function () {
                               _this7.setState({ status: "Upload Success." });
                             }).catch(function (uploadError) {
                               _this7.flashError("Error uploading file.");
@@ -13398,27 +13493,27 @@ var NoteFilesView = function (_React$Component) {
 
                           case 4:
                           case 'end':
-                            return _context7.stop();
+                            return _context8.stop();
                         }
                       }
-                    }, _callee7, _this7);
+                    }, _callee8, _this7);
                   }));
 
-                  return function (_x9) {
-                    return _ref8.apply(this, arguments);
+                  return function (_x10) {
+                    return _ref9.apply(this, arguments);
                   };
                 }()));
 
               case 3:
               case 'end':
-                return _context8.stop();
+                return _context9.stop();
             }
           }
-        }, _callee8, this);
+        }, _callee9, this);
       }));
 
-      function encryptFile(_x6, _x7, _x8) {
-        return _ref7.apply(this, arguments);
+      function encryptFile(_x7, _x8, _x9) {
+        return _ref8.apply(this, arguments);
       }
 
       return encryptFile;

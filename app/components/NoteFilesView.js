@@ -132,8 +132,7 @@ export default class NoteFilesView extends React.Component {
         if(decrypt) {
           data = JSON.parse(data);
           var item = data.items[0];
-          this.decryptDraggedFile(item);
-          resolve();
+          this.decryptDraggedFile(item).then(resolve);
         } else {
           var arrayBuffer = data;
           var bytes = arrayBuffer.byteLength;
@@ -183,13 +182,30 @@ export default class NoteFilesView extends React.Component {
   async decryptDraggedFile(item) {
     this.setState({status: "Decrypting..."});
 
-    return FileManager.get().decryptFile(item).then((data) => {
-      var item = data.decryptedItem;
-      Utils.downloadData(Utils.base64toBinary(data.decryptedData), item.content.fileName, item.content.fileType);
-      this.setState({status: null});
-    }).catch((decryptionError) => {
-      this.flashError("Error decrypting file.");
-    })
+    let credentials = CredentialManager.get().getAllCredentials();
+
+    let decryptWithCredential = async (credential) => {
+      return new Promise((resolve, reject) => {
+        FileManager.get().decryptFile(item, credential).then((data) => {
+          var item = data.decryptedItem;
+          Utils.downloadData(Utils.base64toBinary(data.decryptedData), item.content.fileName, item.content.fileType);
+          this.setState({status: null});
+          resolve(true);
+        }).catch((decryptionError) => {
+          console.error("Error decrypting:", decryptionError);
+          this.flashError("Error decrypting file.");
+          reject(false);
+        })
+      })
+    }
+
+    // Try all credentials until one succeeds
+    for(let credential of credentials) {
+      let success = await decryptWithCredential(credential);
+      if(success) {
+        return;
+      }
+    }
   }
 
   async wait(seconds) {
