@@ -82,7 +82,7 @@ export default class App extends React.Component {
       <div id="root">
         <div id="embed">
         </div>
-        <div id="expand-button" className="sk-button sk-secondary no-border" onClick={this.toggleHeight.bind(this)}>
+        <div id="expand-button" className="sk-button contrast no-border" onClick={this.toggleHeight.bind(this)}>
           <div className="sk-label">{this.state.expanded ? "▲" : "▼"}</div>
         </div>
       </div>
