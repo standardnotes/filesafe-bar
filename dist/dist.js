@@ -1153,11 +1153,11 @@ var App = function (_React$Component) {
         _react2.default.createElement("div", { id: "embed" }),
         _react2.default.createElement(
           "div",
-          { id: "expand-button", className: "sk-button neutral no-border", onClick: this.toggleHeight.bind(this) },
+          { id: "expand-button", className: "sk-button sk-secondary no-border", onClick: this.toggleHeight.bind(this) },
           _react2.default.createElement(
             "div",
             { className: "sk-label" },
-            this.state.expanded ? "Collapse" : "Expand"
+            this.state.expanded ? "▲" : "▼"
           )
         )
       );
