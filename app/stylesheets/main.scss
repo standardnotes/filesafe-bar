@@ -1,125 +1,24 @@
-@import '~stylekit';
+@import '~filesafe_embed';
 
 html, body {
   font-size: var(--sn-stylekit-base-font-size);
   margin: 0;
   padding: 0;
   height: 100%;
+  line-height: 1;
   background-color: transparent;
 }
 
-body {
-  &.highlight {
-    border: 2px dashed;
-  }
+#root {
+  position: relative;
 }
 
-* {
-  box-sizing: border-box;
+#embed {
+  position: relative;
 }
 
-#main-content {
-  padding: 10px;
-}
-
-.sn-component {
-  user-select: auto !important;
-
- .sk-panel .sk-panel-content {
-   padding-top: 6px !important;
-
-   p {
-     color: inherit;
-   }
-  }
-
-  .sk-panel-section:first-child {
-    padding-bottom: 1.3rem;
-    margin-bottom: 0 !important;
-  }
-
-  .sk-panel-section:not(:first-child) {
-    padding-top: 0.7rem;
-    padding-bottom: 1.3rem;
-    margin-bottom: 0 !important;
-  }
-
-  .sk-button-group .sk-button {
-    vertical-align: middle;
-  }
-
-  .sk-button.no-border {
-    border: none;
-  }
-
-  .sk-button {
-    user-select: none;
-  }
-
-  label.no-style {
-    margin: 0;
-    font-size: inherit;
-  }
-}
-
-.bold {
-  font-weight: bold;
-}
-
-.faded {
-  opacity: 0.5;
-}
-
-#messages-container {
-  width: 100%;
-  margin-bottom: 14px !important;
-}
-
-#messages {
-  width: 100%;
-
-
-  ul {
-    margin: 0;
-    padding-left: 8px;
-    list-style-position: inside;
-
-    li {
-      line-height: 1.4;
-    }
-  }
-}
-
-.files-view {
-  margin-top: 3px;
-
-  #add-file-button-container {
-    margin-right: 18px;
-  }
-
-  #file-status {
-    margin-right: 30px;
-    padding-top: 8px;
-  }
-
-  .segmented-buttons {
-    margin-right: 10px;
-  }
-
-  .files {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-
-    .sk-button {
-      border: none;
-      margin-bottom: 10px;
-      margin-right: 5px;
-
-      &.selected {
-        @extend .sk-button.info:hover;
-        margin-right: 0px;
-      }
-    }
-  }
+#expand-button {
+  position: absolute;
+  top: 1.1rem;
+  right: 2rem;
 }
