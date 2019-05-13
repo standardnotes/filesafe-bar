@@ -40,21 +40,8 @@ module.exports = {
         }),
       },
       {
-        test: /\.worker\.js$/,
-        use: {
-          loader: 'worker-loader',
-          options: {
-            inline: true,
-            fallback: false
-          }
-        }
-      },
-      {
         test: /\.js[x]?$/, include: [
           path.resolve(__dirname, 'app'),
-          // These lines have no effect. These files are instead imported using the import syntax inside js files.
-          // path.resolve(__dirname, 'node_modules/sn-components-api/dist/dist.js'),
-          // path.resolve(__dirname, 'node_modules/standard-file-js/dist/sfjs.min.js'),
         ], exclude: /node_modules/, loader: 'babel-loader'
       }
     ]
@@ -63,7 +50,6 @@ module.exports = {
     extensions: ['.js', '.jsx', '.css', '.scss'],
     alias: {
         filesafe_embed: path.join(__dirname, 'node_modules/filesafe-embed/dist/dist.css'),
-        // stylekit: path.join(__dirname, 'node_modules/sn-stylekit/dist/stylekit.css')
     }
   },
   plugins: [
