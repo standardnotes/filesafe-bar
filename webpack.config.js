@@ -49,18 +49,21 @@ module.exports = {
           }
         }
       },
-      { test: /\.js[x]?$/, include: [
-        path.resolve(__dirname, 'app'),
-        // These lines have no effect. These files are instead imported using the import syntax inside js files.
-        // path.resolve(__dirname, 'node_modules/sn-components-api/dist/dist.js'),
-        // path.resolve(__dirname, 'node_modules/standard-file-js/dist/sfjs.min.js'),
-      ], exclude: /node_modules/, loader: 'babel-loader' }
+      {
+        test: /\.js[x]?$/, include: [
+          path.resolve(__dirname, 'app'),
+          // These lines have no effect. These files are instead imported using the import syntax inside js files.
+          // path.resolve(__dirname, 'node_modules/sn-components-api/dist/dist.js'),
+          // path.resolve(__dirname, 'node_modules/standard-file-js/dist/sfjs.min.js'),
+        ], exclude: /node_modules/, loader: 'babel-loader'
+      }
     ]
   },
   resolve: {
     extensions: ['.js', '.jsx', '.css', '.scss'],
     alias: {
-        stylekit: path.join(__dirname, 'node_modules/sn-stylekit/dist/stylekit.css')
+        filesafe_embed: path.join(__dirname, 'node_modules/filesafe-embed/dist/dist.css'),
+        // stylekit: path.join(__dirname, 'node_modules/sn-stylekit/dist/stylekit.css')
     }
   },
   plugins: [
@@ -88,6 +91,7 @@ process.argv.indexOf("--watch") == -1) {
     new CopyWebpackPlugin([
       { from: './app/index.html', to: 'index.html' },
       { from: './app/index.min.html', to: 'index.min.html' },
+      { from: './node_modules/filesafe-js/dist/filesafe-js/EncryptionWorker.js', to: 'filesafe-js/EncryptionWorker.js' },
     ])
   ]
 };

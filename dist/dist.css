@@ -1,5 +1,5 @@
 :root {
-  --sn-stylekit-base-font-size: 14px;
+  --sn-stylekit-base-font-size: 13px;
   --sn-stylekit-font-size-p: 1.0rem;
   --sn-stylekit-font-size-editor: 1.21rem;
   --sn-stylekit-font-size-h6: 0.8rem;
@@ -435,6 +435,7 @@
   resize: none; }
 
 .sn-component input.sk-input.clear {
+  color: var(--sn-stylekit-foreground-color);
   background-color: transparent;
   border: none; }
 
@@ -509,7 +510,9 @@
 .sn-component .sk-segmented-buttons .sk-button, .sn-component .sk-segmented-buttons .sk-box {
   border-radius: 0;
   white-space: nowrap;
-  margin: 0; }
+  margin: 0;
+  margin-left: 0 !important;
+  margin-right: 0 !important; }
 
 .sn-component .sk-segmented-buttons .sk-button:not(:last-child), .sn-component .sk-segmented-buttons .sk-box:not(:last-child) {
   border-right: none;
@@ -913,7 +916,7 @@
   box-shadow: inset 0 0 0 1px;
   color: var(--sn-stylekit-info-color); }
 
-.sn-component .sk-button.info:hover:before, .sn-component .files-view .files .sk-button.selected:before, .files-view .files .sn-component .sk-button.selected:before, .sn-component .info.sk-box:hover:before, .sn-component .sk-box.info:hover:before, .sn-component .sk-circle.info:hover:before {
+.sn-component .sk-button.info:hover:before, .sn-component #filesafe-embed .files-view .files .file-item-button.selected:before, #filesafe-embed .files-view .files .sn-component .file-item-button.selected:before, .sn-component .info.sk-box:hover:before, .sn-component .sk-box.info:hover:before, .sn-component .sk-circle.info:hover:before {
   filter: brightness(130%); }
 
 .sn-component .sk-button.info.no-bg, .sn-component .info.no-bg.sk-box, .sn-component .sk-box.info.no-bg, .sn-component .sk-circle.info.no-bg {
@@ -1862,80 +1865,194 @@ textarea,
 
 .windows-web ::-webkit-scrollbar-corner, .windows-desktop ::-webkit-scrollbar-corner, .linux-web ::-webkit-scrollbar-corner, .linux-desktop ::-webkit-scrollbar-corner {
   background-color: transparent; }
+
+#filesafe-embed {
+  font-size: var(--sn-stylekit-base-font-size);
+  line-height: 1; }
+
+#filesafe-embed.highlight #home {
+  border: 2px dashed var(--sn-stylekit-info-color); }
+
+#filesafe-embed a {
+  cursor: pointer; }
+
+#filesafe-embed .sn-component {
+  font-size: var(--sn-stylekit-base-font-size) !important;
+  user-select: auto !important; }
+
+#filesafe-embed .sn-component .sk-panel .sk-panel-content {
+  padding-top: 6px !important;
+  height: inherit !important; }
+
+#filesafe-embed .sn-component .sk-panel .sk-panel-content p {
+  color: inherit; }
+
+#filesafe-embed .sn-component .sk-panel-section:first-child {
+  padding-bottom: 1.3rem;
+  margin-bottom: 0 !important; }
+
+#filesafe-embed .sn-component .sk-panel-section:not(:first-child) {
+  padding-top: 0.7rem;
+  padding-bottom: 1.3rem;
+  margin-bottom: 0 !important; }
+
+#filesafe-embed .sn-component .sk-button-group .sk-button {
+  vertical-align: middle; }
+
+#filesafe-embed .sn-component .sk-button.no-border {
+  border: none; }
+
+#filesafe-embed .sn-component .sk-button {
+  user-select: none; }
+
+#filesafe-embed .sn-component .sk-horizontal-group.top > * {
+  vertical-align: top; }
+
+#filesafe-embed .sn-component .sk-horizontal-group.top .sk-panel-row:first-child {
+  padding-top: 0; }
+
+#filesafe-embed .sn-component .sk-horizontal-group .sk-panel-section-title {
+  margin-bottom: 0; }
+
+#filesafe-embed .sn-component .sk-circle.x-small {
+  width: 7px;
+  height: 7px; }
+
+#filesafe-embed .sn-component label.no-style {
+  margin: 0;
+  font-size: inherit; }
+
+#filesafe-embed .bold {
+  font-weight: bold; }
+
+#filesafe-embed .faded {
+  opacity: 0.5; }
+
+#filesafe-embed .list-container {
+  margin-top: 10px; }
+
+#filesafe-embed .list-container .list-item .sk-circle {
+  margin-top: 2px; }
+
+#filesafe-embed .list-container .list-item:not(:last-child) {
+  margin-bottom: 12px; }
+
+#filesafe-embed #messages-container {
+  width: 100%;
+  margin-bottom: 14px !important; }
+
+#filesafe-embed #messages {
+  width: 100%; }
+
+#filesafe-embed #messages .title {
+  font-weight: bold;
+  font-size: var(--sn-stylekit-font-size-h4);
+  margin-bottom: 12px; }
+
+#filesafe-embed #messages ul {
+  margin: 0;
+  margin-top: 6px;
+  padding-left: 0px;
+  list-style-position: inside; }
+
+#filesafe-embed #messages ul li {
+  line-height: 1.4;
+  font-weight: 500; }
+
+#filesafe-embed #messages ul li:not(last-child) {
+  margin-bottom: 5px; }
+
+#filesafe-embed #attach-file-button-label {
+  color: var(--sn-stylekit-info-contrast-color); }
+
+#filesafe-embed .files-view {
+  margin-top: 3px; }
+
+#filesafe-embed .files-view #add-file-button-container {
+  margin-right: 18px;
+  margin-bottom: 8px; }
+
+#filesafe-embed .files-view #file-upload-status, #filesafe-embed .files-view #file-download-status {
+  margin-right: 30px;
+  margin-bottom: 18px;
+  padding-top: 4px; }
+
+#filesafe-embed .files-view .segmented-buttons {
+  margin-right: 10px; }
+
+#filesafe-embed .files-view .files {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap; }
+
+#filesafe-embed .files-view .files .sk-button {
+  white-space: normal;
+  word-break: break-all; }
+
+#filesafe-embed .files-view .files .file-item-container {
+  margin-right: 5px; }
+
+#filesafe-embed .files-view .files .file-item-container.expanded {
+  flex-wrap: wrap;
+  margin-bottom: 10px; }
+
+#filesafe-embed .files-view .files .file-item-button {
+  border: none;
+  margin-right: 5px; }
+
+#filesafe-embed .files-view .files .file-item-button:not(.selected) {
+  margin-bottom: 10px; }
+
+#filesafe-embed .files-view .files .file-item-button.selected {
+  margin-right: 0px;
+  padding: 12px;
+  border-radius: 3px; }
+
+#filesafe-embed .files-view .files .file-item-options-wrapper {
+  display: inline-block; }
+
+#filesafe-embed .files-view .files .file-item-options-wrapper .file-location {
+  opacity: 0.7;
+  font-size: 0.7rem;
+  margin-top: 9px; }
+
+#filesafe-embed .files-view .files .sk-app-bar.file-item-options {
+  width: fit-content;
+  display: flex;
+  flex-direction: row;
+  margin-top: 10px;
+  margin-bottom: 0px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 1rem; }
+
+#filesafe-embed .files-view .files .sk-app-bar.file-item-options .center {
+  display: flex;
+  height: 100%;
+  margin-left: auto;
+  margin-right: auto; }
+
+#filesafe-embed .files-view .files .sk-app-bar.file-item-options .disabled {
+  opacity: 0.5; }
+
+#filesafe-embed .files-view .files .sk-app-bar.file-item-options .sk-button {
+  border-radius: 0; }
+
 html, body {
   font-size: var(--sn-stylekit-base-font-size);
   margin: 0;
   padding: 0;
   height: 100%;
+  line-height: 1;
   background-color: transparent; }
 
-body.highlight {
-  border: 2px dashed; }
+#root {
+  position: relative; }
 
-* {
-  box-sizing: border-box; }
+#embed {
+  position: relative; }
 
-#main-content {
-  padding: 10px; }
-
-.sn-component {
-  user-select: auto !important; }
-  .sn-component .sk-panel .sk-panel-content {
-    padding-top: 6px !important; }
-    .sn-component .sk-panel .sk-panel-content p {
-      color: inherit; }
-  .sn-component .sk-panel-section:first-child {
-    padding-bottom: 1.3rem;
-    margin-bottom: 0 !important; }
-  .sn-component .sk-panel-section:not(:first-child) {
-    padding-top: 0.7rem;
-    padding-bottom: 1.3rem;
-    margin-bottom: 0 !important; }
-  .sn-component .sk-button-group .sk-button {
-    vertical-align: middle; }
-  .sn-component .sk-button.no-border {
-    border: none; }
-  .sn-component .sk-button {
-    user-select: none; }
-  .sn-component label.no-style {
-    margin: 0;
-    font-size: inherit; }
-
-.bold {
-  font-weight: bold; }
-
-.faded {
-  opacity: 0.5; }
-
-#messages-container {
-  width: 100%;
-  margin-bottom: 14px !important; }
-
-#messages {
-  width: 100%; }
-  #messages ul {
-    margin: 0;
-    padding-left: 8px;
-    list-style-position: inside; }
-    #messages ul li {
-      line-height: 1.4; }
-
-.files-view {
-  margin-top: 3px; }
-  .files-view #add-file-button-container {
-    margin-right: 18px; }
-  .files-view #file-status {
-    margin-right: 30px;
-    padding-top: 8px; }
-  .files-view .segmented-buttons {
-    margin-right: 10px; }
-  .files-view .files {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap; }
-    .files-view .files .sk-button {
-      border: none;
-      margin-bottom: 10px;
-      margin-right: 5px; }
-      .files-view .files .sk-button.selected {
-        margin-right: 0px; }
+#expand-button {
+  position: absolute;
+  top: 1.1rem;
+  right: 2rem; }
