@@ -1095,8 +1095,24 @@ var App = function (_React$Component) {
         _this2.filesafe.setCurrentNote(noteModel);
       });
 
+      var delegate = {
+        onSelectFile: function onSelectFile(fileDescriptor) {
+          if (fileDescriptor) {
+            if (!_this2.state.expanded) {
+              _this2.expandedFromSelection = true;
+              _this2.expandForFileSelection();
+            }
+          } else {
+            if (_this2.expandedFromSelection) {
+              _this2.collapse();
+              _this2.expandedFromSelection = false;
+            }
+          }
+        }
+      };
+
       var mountPoint = document.getElementById("embed");
-      _filesafeEmbed2.default.FilesafeEmbed.renderInElement(mountPoint, this.filesafe);
+      _filesafeEmbed2.default.FilesafeEmbed.renderInElement(mountPoint, this.filesafe, delegate);
 
       this.recomputeHeight();
     }
@@ -1129,19 +1145,24 @@ var App = function (_React$Component) {
     key: "toggleHeight",
     value: function toggleHeight() {
       if (this.state.expanded) {
-        this.setHeightCollapsed();
+        this.collapse();
       } else {
-        this.setHeightExpanded();
+        this.expand();
       }
     }
   }, {
-    key: "setHeightExpanded",
-    value: function setHeightExpanded() {
+    key: "expandForFileSelection",
+    value: function expandForFileSelection() {
+      this.componentManager.setSize("container", "100%", 130);
+    }
+  }, {
+    key: "expand",
+    value: function expand() {
       this.setState({ expanded: true }, this.recomputeHeight);
     }
   }, {
-    key: "setHeightCollapsed",
-    value: function setHeightCollapsed() {
+    key: "collapse",
+    value: function collapse() {
       this.setState({ expanded: false }, this.recomputeHeight);
     }
   }, {
@@ -1321,6 +1342,16 @@ function () {
       });
     }
   }, {
+    key: "setDelegate",
+    value: function setDelegate(delegate) {
+      this.delegate = delegate;
+    }
+  }, {
+    key: "getDelegate",
+    value: function getDelegate() {
+      return this.delegate || {};
+    }
+  }, {
     key: "addDataChangeObserver",
     value: function addDataChangeObserver(observer) {
       this.dataChangeObservers.push(observer);
@@ -1433,54 +1464,42 @@ function (_React$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(FilesView).call(this, props));
 
-    _defineProperty(_assertThisInitialized(_this), "downloadFile",
+    _defineProperty(_assertThisInitialized(_this), "setStatusForFile", function (file, status, hasSpinner) {
+      _this.setState({
+        fileStatusFile: file,
+        fileStatus: status,
+        hasStatusSpinner: hasSpinner
+      });
+    });
+
+    _defineProperty(_assertThisInitialized(_this), "decryptFile",
     /*#__PURE__*/
     function () {
       var _ref = _asyncToGenerator(
       /*#__PURE__*/
       regeneratorRuntime.mark(function _callee(fileDescriptor) {
-        var platform, display, integration, name;
+        var integration, name;
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                if (!_this.isMobile) {
-                  _context.next = 5;
-                  break;
-                }
-
-                platform = __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.getPlatform();
-                display = platform == "ios" ? "iOS" : "Android";
-                alert("Downloading files is not currently supported on ".concat(display, "."));
-                return _context.abrupt("return");
-
-              case 5:
                 integration = __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.integrationForFileDescriptor(fileDescriptor);
                 name = __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.displayStringForIntegration(integration);
 
-                _this.setState({
-                  status: "Downloading from ".concat(name, "...")
-                });
+                _this.setStatusForFile(fileDescriptor, "Downloading from ".concat(name, "..."), true);
 
                 return _context.abrupt("return", __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.downloadFileFromDescriptor(fileDescriptor).then(function (item) {
-                  _this.setState({
-                    status: "Decrypting..."
-                  });
+                  _this.setStatusForFile(fileDescriptor, "Decrypting...", true);
 
                   return __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.decryptFile({
                     fileDescriptor: fileDescriptor,
                     fileItem: item
                   }).then(function (data) {
-                    __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.downloadBase64Data({
+                    return {
                       base64Data: data.decryptedData,
                       fileName: fileDescriptor.content.fileName,
                       fileType: fileDescriptor.content.fileType
-                    });
-
-                    _this.setState({
-                      status: null,
-                      selectedFile: null
-                    });
+                    };
                   })["catch"](function (decryptionError) {
                     console.error("filesafe-embed | error decrypting file:", decryptionError);
 
@@ -1492,7 +1511,7 @@ function (_React$Component) {
                   _this.flashError("Error downloading file.");
                 }));
 
-              case 9:
+              case 4:
               case "end":
                 return _context.stop();
             }
@@ -1505,6 +1524,100 @@ function (_React$Component) {
       };
     }());
 
+    _defineProperty(_assertThisInitialized(_this), "downloadFile",
+    /*#__PURE__*/
+    function () {
+      var _ref2 = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee2(fileDescriptor) {
+        var platform, display, fileData;
+        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                if (!_this.isMobile) {
+                  _context2.next = 5;
+                  break;
+                }
+
+                platform = __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.getPlatform();
+                display = platform == "ios" ? "iOS" : "Android";
+                alert("Downloading files is not currently supported on ".concat(display, "."));
+                return _context2.abrupt("return");
+
+              case 5:
+                _context2.next = 7;
+                return _this.decryptFile(fileDescriptor);
+
+              case 7:
+                fileData = _context2.sent;
+                __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.downloadBase64Data(fileData);
+
+                _this.setStatusForFile(fileDescriptor, null);
+
+              case 10:
+              case "end":
+                return _context2.stop();
+            }
+          }
+        }, _callee2);
+      }));
+
+      return function (_x2) {
+        return _ref2.apply(this, arguments);
+      };
+    }());
+
+    _defineProperty(_assertThisInitialized(_this), "previewFile",
+    /*#__PURE__*/
+    function () {
+      var _ref3 = _asyncToGenerator(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee3(fileDescriptor) {
+        var fileData, url;
+        return regeneratorRuntime.wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                _context3.next = 2;
+                return _this.decryptFile(fileDescriptor);
+
+              case 2:
+                fileData = _context3.sent;
+                url = __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.createTemporaryFileUrl({
+                  base64Data: fileData.base64Data,
+                  dataType: fileData.fileType
+                });
+
+                _this.setStatusForFile(fileDescriptor, null);
+
+                _this.setState({
+                  previewUrl: url,
+                  previewingFile: fileDescriptor
+                });
+
+              case 6:
+              case "end":
+                return _context3.stop();
+            }
+          }
+        }, _callee3);
+      }));
+
+      return function (_x3) {
+        return _ref3.apply(this, arguments);
+      };
+    }());
+
+    _defineProperty(_assertThisInitialized(_this), "onClickPreview", function () {
+      // We'll try revoking here in a timeout, but in browsers, since it opens in another tab, this code may not execute.
+      // In that case, we'll revoke again when the current file is collapsed or another is selected.
+      // Actually I've found that with a timeout of 100, it doesn't execute, but if you increase to 250-500, it does.
+      setTimeout(function () {
+        _this.revokePreview();
+      }, 500);
+    });
+
     _defineProperty(_assertThisInitialized(_this), "selectFile", function (event, metadata) {
       var element = event.target;
       element.focus();
@@ -1513,11 +1626,18 @@ function (_React$Component) {
         _this.setState({
           selectedFile: null
         });
+
+        _this.delegate.onSelectFile && _this.delegate.onSelectFile(null);
       } else {
         _this.setState({
           selectedFile: metadata
         });
-      }
+
+        _this.delegate.onSelectFile && _this.delegate.onSelectFile(metadata);
+      } // We want to release previews after another file is selected or when the current file is collapsed.
+
+
+      _this.revokePreview();
     });
 
     _defineProperty(_assertThisInitialized(_this), "deleteFile", function (fileDescriptor) {
@@ -1547,6 +1667,10 @@ function (_React$Component) {
       var integration = __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.integrationForFileDescriptor(file);
       var integrationName = __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.displayStringForIntegration(integration);
       var path = file.content.serverMetadata.file_path;
+      var previewReady = _this.state.previewUrl && _this.state.previewingFile == file; // We should make Files their own component and have their own state but for now we're doing it this way.
+
+      var hasStatus = _this.state.fileStatusFile == file && _this.state.fileStatus;
+      var hasSpinner = _this.state.hasStatusSpinner;
       return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
         className: "file-item-container " + (_this.isFileSelected(file) ? "expanded" : "")
       }, __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
@@ -1556,7 +1680,13 @@ function (_React$Component) {
         className: "file-item-button sk-button info " + (_this.isFileSelected(file) ? "selected" : undefined)
       }, __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
         className: "sk-label"
-      }, file.content.fileName), _this.isFileSelected(file) && __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
+      }, file.content.fileName), hasStatus && __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
+        className: "file-download-status sk-horizontal-group"
+      }, hasSpinner && __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
+        className: "sk-spinner x-small"
+      }), __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
+        className: "file-status-label"
+      }, _this.state.fileStatus)), _this.isFileSelected(file) && __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
         className: "file-item-options-wrapper"
       }, __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
         onClick: function onClick(e) {
@@ -1575,6 +1705,28 @@ function (_React$Component) {
       }, __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
         className: "sk-label contrast " + (_this.isMobile ? "disabled" : "")
       }, "Download")), __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
+        className: "sk-app-bar-item border"
+      }), _this.supportsPreviews && previewReady && __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("a", {
+        className: "sk-app-bar-item",
+        href: _this.state.previewUrl,
+        onClick: function onClick(e) {
+          e.stopPropagation();
+
+          _this.onClickPreview();
+        },
+        target: "_blank"
+      }, __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
+        className: "sk-label contrast"
+      }, "Open Preview")), _this.supportsPreviews && !previewReady && __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
+        onClick: function onClick(e) {
+          e.stopPropagation();
+
+          _this.previewFile(file);
+        },
+        className: "sk-app-bar-item"
+      }, __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
+        className: "sk-label contrast " + (_this.isMobile ? "disabled" : "")
+      }, "Preview")), _this.supportsPreviews && __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
         className: "sk-app-bar-item border"
       }), __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
         onClick: function onClick(e) {
@@ -1602,23 +1754,30 @@ function (_React$Component) {
     });
 
     _this.state = {};
+    _this.delegate = __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().getDelegate();
     return _this;
   }
 
   _createClass(FilesView, [{
+    key: "revokePreview",
+    value: function revokePreview() {
+      if (this.state.previewUrl) {
+        __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.revokeTempUrl(this.state.previewUrl);
+      }
+
+      this.setState({
+        previewUrl: null,
+        previewingFile: null
+      });
+    }
+  }, {
     key: "flashError",
     value: function flashError(error) {
       var _this2 = this;
 
-      this.setState({
-        status: error,
-        statusClass: "danger"
-      });
+      this.setStatusForFile(error, false);
       setTimeout(function () {
-        _this2.setState({
-          status: null,
-          statusClass: null
-        });
+        _this2.setStatusForFile(null);
       }, 2500);
     }
   }, {
@@ -1626,30 +1785,28 @@ function (_React$Component) {
     value: function render() {
       var _this3 = this;
 
-      var statusClass = this.state.statusClass ? this.state.statusClass : "info";
-      var hasSpinner = statusClass == "info";
-      var elements = [];
-
-      if (this.state.status) {
-        elements.push(__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
-          id: "file-download-status",
-          className: "sk-horizontal-group"
-        }, hasSpinner && __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
-          className: "sk-spinner info small"
-        }), __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("div", {
-          className: statusClass
-        }, this.state.status)));
-      }
-
-      var fileElements = this.props.files.map(function (file) {
+      return this.props.files.map(function (file) {
         return _this3.elementForFile(file);
       });
-
-      if (fileElements.length > 0) {
-        elements = elements.concat(fileElements);
+    }
+  }, {
+    key: "supportsPreviews",
+    get: function get() {
+      if (this._supportsPreview !== undefined) {
+        return this._supportsPreview;
       }
 
-      return elements;
+      var env = __WEBPACK_IMPORTED_MODULE_1__lib_FilesafeManager__["a" /* default */].get().filesafe.getEnvironment(); // May be undefined if bridge hasn't been established yet.
+
+      if (env == undefined) {
+        return false;
+      } // Only the web app supports previews, as temporary object urls are created for previews,
+      // and temp urls only live in the same browser scope as client. In desktop, the electron scope
+      // is different from the the browser scope, and on mobile, the web view scope will be different than
+      // the user's browser. On web, since we open the preview in the same browser, it will work.
+
+
+      this._supportsPreview = env == "web";
     }
   }, {
     key: "isMobile",
@@ -1726,8 +1883,9 @@ function (_React$Component) {
   _createClass(FilesafeEmbed, null, [{
     key: "renderInElement",
     // Called by consumer
-    value: function renderInElement(element, filesafe) {
+    value: function renderInElement(element, filesafe, delegate) {
       __WEBPACK_IMPORTED_MODULE_3__lib_FilesafeManager__["a" /* default */].get().setFilesafeInstance(filesafe);
+      __WEBPACK_IMPORTED_MODULE_3__lib_FilesafeManager__["a" /* default */].get().setDelegate(delegate);
       __WEBPACK_IMPORTED_MODULE_1_react_dom___default.a.render(__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(FilesafeEmbed), element);
     } // Called by consumer. Required if embed will appear and disappear multiple times
     // This function will clean up window observers
@@ -16774,6 +16932,11 @@ function () {
           dataType = _ref9.dataType;
       return __WEBPACK_IMPORTED_MODULE_5__lib_util_Utils__["a" /* default */].tempUrlForData(__WEBPACK_IMPORTED_MODULE_5__lib_util_Utils__["a" /* default */].base64toBinary(base64Data), dataType);
     }
+  }, {
+    key: "revokeTempUrl",
+    value: function revokeTempUrl(url) {
+      __WEBPACK_IMPORTED_MODULE_5__lib_util_Utils__["a" /* default */].revokeTempUrl(url);
+    }
     /* Credentials */
 
   }, {
@@ -19337,10 +19500,13 @@ function () {
   }, {
     key: "downloadData",
     value: function downloadData(data, fileName, fileType) {
+      var _this = this;
+
       var useNavigation = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
       var link = document.createElement('a');
       link.setAttribute('download', fileName);
-      link.href = this.tempUrlForData(data, fileType);
+      var tempUrl = this.tempUrlForData(data, fileType);
+      link.href = tempUrl;
       link.setAttribute("target", "_blank");
 
       if (useNavigation) {
@@ -19350,6 +19516,10 @@ function () {
         link.click();
         link.remove();
       }
+
+      setTimeout(function () {
+        _this.revokeTempUrl(tempUrl);
+      }, 500);
     }
   }, {
     key: "tempUrlForData",
@@ -19359,24 +19529,40 @@ function () {
       }));
     }
   }, {
+    key: "revokeTempUrl",
+    value: function revokeTempUrl(url) {
+      window.URL.revokeObjectURL(url);
+    }
+  }, {
     key: "copyTextToClipboard",
     value: function copyTextToClipboard(text) {
       if (window.clipboardData && window.clipboardData.setData) {
         // IE specific code path to prevent textarea being shown while dialog is visible.
         return clipboardData.setData("Text", text);
       } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
-        var textarea = document.createElement("textarea");
-        textarea.textContent = text;
-        textarea.style.position = "fixed"; // Prevent scrolling to bottom of page in MS Edge.
-
-        document.body.appendChild(textarea);
-        textarea.select();
+        var textarea;
+        var result;
 
         try {
-          return document.execCommand("copy"); // Security exception may be thrown by some browsers.
-        } catch (ex) {
-          console.warn("Copy to clipboard failed.", ex);
-          return false;
+          textarea = document.createElement('textarea');
+          textarea.setAttribute('readonly', true);
+          textarea.setAttribute('contenteditable', true);
+          textarea.style.position = 'fixed'; // prevent scroll from jumping to the bottom when focus is set.
+
+          textarea.value = text;
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          var range = document.createRange();
+          range.selectNodeContents(textarea);
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          textarea.setSelectionRange(0, textarea.value.length);
+          result = document.execCommand('copy');
+        } catch (err) {
+          console.error(err);
+          result = null;
         } finally {
           document.body.removeChild(textarea);
         }
@@ -35389,6 +35575,11 @@ function () {
           dataType = _ref9.dataType;
       return __WEBPACK_IMPORTED_MODULE_5__lib_util_Utils__["a" /* default */].tempUrlForData(__WEBPACK_IMPORTED_MODULE_5__lib_util_Utils__["a" /* default */].base64toBinary(base64Data), dataType);
     }
+  }, {
+    key: "revokeTempUrl",
+    value: function revokeTempUrl(url) {
+      __WEBPACK_IMPORTED_MODULE_5__lib_util_Utils__["a" /* default */].revokeTempUrl(url);
+    }
     /* Credentials */
 
   }, {
@@ -37952,10 +38143,13 @@ function () {
   }, {
     key: "downloadData",
     value: function downloadData(data, fileName, fileType) {
+      var _this = this;
+
       var useNavigation = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
       var link = document.createElement('a');
       link.setAttribute('download', fileName);
-      link.href = this.tempUrlForData(data, fileType);
+      var tempUrl = this.tempUrlForData(data, fileType);
+      link.href = tempUrl;
       link.setAttribute("target", "_blank");
 
       if (useNavigation) {
@@ -37965,6 +38159,10 @@ function () {
         link.click();
         link.remove();
       }
+
+      setTimeout(function () {
+        _this.revokeTempUrl(tempUrl);
+      }, 500);
     }
   }, {
     key: "tempUrlForData",
@@ -37974,24 +38172,40 @@ function () {
       }));
     }
   }, {
+    key: "revokeTempUrl",
+    value: function revokeTempUrl(url) {
+      window.URL.revokeObjectURL(url);
+    }
+  }, {
     key: "copyTextToClipboard",
     value: function copyTextToClipboard(text) {
       if (window.clipboardData && window.clipboardData.setData) {
         // IE specific code path to prevent textarea being shown while dialog is visible.
         return clipboardData.setData("Text", text);
       } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
-        var textarea = document.createElement("textarea");
-        textarea.textContent = text;
-        textarea.style.position = "fixed"; // Prevent scrolling to bottom of page in MS Edge.
-
-        document.body.appendChild(textarea);
-        textarea.select();
+        var textarea;
+        var result;
 
         try {
-          return document.execCommand("copy"); // Security exception may be thrown by some browsers.
-        } catch (ex) {
-          console.warn("Copy to clipboard failed.", ex);
-          return false;
+          textarea = document.createElement('textarea');
+          textarea.setAttribute('readonly', true);
+          textarea.setAttribute('contenteditable', true);
+          textarea.style.position = 'fixed'; // prevent scroll from jumping to the bottom when focus is set.
+
+          textarea.value = text;
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          var range = document.createRange();
+          range.selectNodeContents(textarea);
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          textarea.setSelectionRange(0, textarea.value.length);
+          result = document.execCommand('copy');
+        } catch (err) {
+          console.error(err);
+          result = null;
         } finally {
           document.body.removeChild(textarea);
         }
