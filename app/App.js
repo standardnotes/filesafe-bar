@@ -31,8 +31,24 @@ export default class App extends React.Component {
       this.filesafe.setCurrentNote(noteModel);
     });
 
+    let delegate = {
+      onSelectFile: (fileDescriptor) => {
+        if(fileDescriptor) {
+          if(!this.state.expanded) {
+            this.expandedFromSelection = true;
+            this.expandForFileSelection();
+          }
+        } else {
+          if(this.expandedFromSelection)  {
+            this.collapse();
+            this.expandedFromSelection = false;
+          }
+        }
+      }
+    }
+
     let mountPoint = document.getElementById("embed");
-    FilesafeEmbed.FilesafeEmbed.renderInElement(mountPoint, this.filesafe);
+    FilesafeEmbed.FilesafeEmbed.renderInElement(mountPoint, this.filesafe, delegate);
 
     this.recomputeHeight();
   }
@@ -63,17 +79,21 @@ export default class App extends React.Component {
 
   toggleHeight() {
     if(this.state.expanded) {
-      this.setHeightCollapsed();
+      this.collapse();
     } else {
-      this.setHeightExpanded();
+      this.expand();
     }
   }
 
-  setHeightExpanded() {
+  expandForFileSelection() {
+    this.componentManager.setSize("container", "100%", 130);
+  }
+
+  expand() {
     this.setState({expanded: true}, this.recomputeHeight)
   }
 
-  setHeightCollapsed() {
+  collapse() {
     this.setState({expanded: false}, this.recomputeHeight);
   }
 
