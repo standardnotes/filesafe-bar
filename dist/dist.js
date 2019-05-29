@@ -1656,6 +1656,16 @@ function (_React$Component) {
             switch (_context.prev = _context.next) {
               case 0:
                 integration = __WEBPACK_IMPORTED_MODULE_10__lib_FilesafeManager__["a" /* default */].get().filesafe.integrationForFileDescriptor(fileDescriptor);
+
+                if (integration) {
+                  _context.next = 4;
+                  break;
+                }
+
+                alert("Unable to find integration for file. If you have deleted the integration, please re-add it and try again.");
+                return _context.abrupt("return");
+
+              case 4:
                 name = __WEBPACK_IMPORTED_MODULE_10__lib_FilesafeManager__["a" /* default */].get().filesafe.displayStringForIntegration(integration);
 
                 _this.setStatusForFile(fileDescriptor, "Downloading from ".concat(name, "..."), true);
@@ -1683,7 +1693,7 @@ function (_React$Component) {
                   _this.flashError("Error downloading file.");
                 }));
 
-              case 4:
+              case 7:
               case "end":
                 return _context.stop();
             }
@@ -1837,7 +1847,14 @@ function (_React$Component) {
 
     __WEBPACK_IMPORTED_MODULE_8__babel_runtime_helpers_defineProperty___default()(__WEBPACK_IMPORTED_MODULE_6__babel_runtime_helpers_assertThisInitialized___default()(_this), "elementForFile", function (file) {
       var integration = __WEBPACK_IMPORTED_MODULE_10__lib_FilesafeManager__["a" /* default */].get().filesafe.integrationForFileDescriptor(file);
-      var integrationName = __WEBPACK_IMPORTED_MODULE_10__lib_FilesafeManager__["a" /* default */].get().filesafe.displayStringForIntegration(integration);
+      var integrationName;
+
+      if (integration) {
+        integrationName = __WEBPACK_IMPORTED_MODULE_10__lib_FilesafeManager__["a" /* default */].get().filesafe.displayStringForIntegration(integration);
+      } else {
+        integrationName = "Integration Not Found";
+      }
+
       var path = file.content.serverMetadata.file_path;
       var previewReady = _this.state.previewUrl && _this.state.previewingFile == file; // We should make Files their own component and have their own state but for now we're doing it this way.
 
@@ -4158,14 +4175,16 @@ function (_React$Component) {
         return;
       }
 
-      __WEBPACK_IMPORTED_MODULE_8__lib_FilesafeManager__["a" /* default */].get().filesafe.saveIntegrationFromCode(code);
+      __WEBPACK_IMPORTED_MODULE_8__lib_FilesafeManager__["a" /* default */].get().filesafe.saveIntegrationFromCode(code).then(function () {
+        _this.setState({
+          integrationCode: null,
+          showInputForm: false
+        });
 
-      _this.setState({
-        integrationCode: null,
-        showInputForm: false
+        _this.reloadIntegrations();
+      })["catch"](function () {
+        alert("Invalid integration code. Ensure the correct value is copied and try again.");
       });
-
-      _this.reloadIntegrations();
     });
 
     __WEBPACK_IMPORTED_MODULE_6__babel_runtime_helpers_defineProperty___default()(__WEBPACK_IMPORTED_MODULE_4__babel_runtime_helpers_assertThisInitialized___default()(_this), "addNewIntegrationClicked", function () {
