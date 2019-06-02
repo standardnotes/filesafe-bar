@@ -2539,13 +2539,6 @@ function (_React$Component) {
                 return _context.finish(23);
 
               case 31:
-                setTimeout(function () {
-                  _this.setState({
-                    status: null
-                  });
-                }, 2000);
-
-              case 32:
               case "end":
                 return _context.stop();
             }
@@ -2967,11 +2960,37 @@ function (_React$Component) {
           while (1) {
             switch (_context9.prev = _context9.next) {
               case 0:
+                credential = __WEBPACK_IMPORTED_MODULE_13__lib_FilesafeManager__["a" /* default */].get().filesafe.getDefaultCredentials();
+
+                if (credential) {
+                  _context9.next = 5;
+                  break;
+                }
+
+                this.setState({
+                  status: null
+                });
+                alert("Please set up at least one key before attempting to upload a file. To do this, press Expand, and select Create New in the Keys section.");
+                return _context9.abrupt("return");
+
+              case 5:
+                integration = __WEBPACK_IMPORTED_MODULE_13__lib_FilesafeManager__["a" /* default */].get().filesafe.getDefaultIntegration();
+
+                if (integration) {
+                  _context9.next = 10;
+                  break;
+                }
+
+                this.setState({
+                  status: null
+                });
+                alert("Please set up at least one integration before attempting to upload a file. To do this, press Expand, and select Add New in the Integrations section.");
+                return _context9.abrupt("return");
+
+              case 10:
                 this.setState({
                   status: "Encrypting..."
                 });
-                credential = __WEBPACK_IMPORTED_MODULE_13__lib_FilesafeManager__["a" /* default */].get().filesafe.getDefaultCredentials();
-                integration = __WEBPACK_IMPORTED_MODULE_13__lib_FilesafeManager__["a" /* default */].get().filesafe.getDefaultIntegration();
                 return _context9.abrupt("return", __WEBPACK_IMPORTED_MODULE_13__lib_FilesafeManager__["a" /* default */].get().filesafe.encryptFile({
                   data: data,
                   inputFileName: inputFileName,
@@ -3004,6 +3023,12 @@ function (_React$Component) {
                               _this5.setState({
                                 status: "Upload Success."
                               });
+
+                              setTimeout(function () {
+                                _this5.setState({
+                                  status: null
+                                });
+                              }, 2000);
                             })["catch"](function (uploadError) {
                               console.error("fs-embed | error uploading file:", uploadError);
 
@@ -3023,7 +3048,7 @@ function (_React$Component) {
                   };
                 }()));
 
-              case 4:
+              case 12:
               case "end":
                 return _context9.stop();
             }
