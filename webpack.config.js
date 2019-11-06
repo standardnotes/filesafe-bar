@@ -2,7 +2,6 @@ const webpack = require('webpack');
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const uglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 
 module.exports = {
   entry: {
@@ -15,6 +14,9 @@ module.exports = {
     publicPath: '/',
     filename: './[name]'
   },
+  optimization: {
+    minimize: true
+  },
   devServer: {
     historyApiFallback: true,
     watchOptions: { aggregateTimeout: 300, poll: 1000 },
@@ -25,7 +27,7 @@ module.exports = {
     }
   },
   module: {
-    loaders: [
+    rules: [
       { test: /\.css$/, include: path.resolve(__dirname, 'app'), loader: 'style-loader!css-loader' },
       {
         test: /\.scss$/,
@@ -65,10 +67,6 @@ process.argv.indexOf("--watch") == -1) {
     },
 
     new ExtractTextPlugin({ filename: './dist.css', disable: false, allChunks: true}),
-    new uglifyJsPlugin({
-      include: /\.min\.js$/,
-      minimize: true
-    }),
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify('production')
