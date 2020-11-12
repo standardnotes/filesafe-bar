@@ -48,3 +48,6 @@ build
 
 # Editor
 .idea
+
+# Build files
+dist
