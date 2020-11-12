@@ -2,6 +2,9 @@
   "name": "@standardnotes/filesafe-bar",
   "version": "2.0.11",
   "main": "dist/dist.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "lint": "eslint --cache --ignore-path .gitignore --ext .jsx,.js --format=node_modules/eslint-formatter-pretty .",
     "test": "npm run lint",
