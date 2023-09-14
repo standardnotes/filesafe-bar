@@ -2799,10 +2799,9 @@ filename-regex@^2.0.0:
   resolved "https://registry.yarnpkg.com/filename-regex/-/filename-regex-2.0.1.tgz#c1c4b9bee3e09725ddb106b75c1e301fe2f18b26"
   integrity sha1-wcS5vuPglyXdsQa3XB4wH+LxiyY=
 
-filesafe-embed@1.0.10:
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/filesafe-embed/-/filesafe-embed-1.0.10.tgz#23e95275693086c05ad0dedc2d970ff55a64a21c"
-  integrity sha512-C1h5T1kLIhiA2AM1rV1mVH+vaKQHL36q9L35uR8r3AvJJ88Xu6P0Urgd2ibI4pcIp3ouy6g0dnXq/d+7cwCyVg==
+"filesafe-embed@git+https://github.com/standardnotes/filesafe-embed.git#309a4282959ffe08ebb8d0e23dbddb60adbd09ce":
+  version "1.1.0"
+  resolved "git+https://github.com/standardnotes/filesafe-embed.git#309a4282959ffe08ebb8d0e23dbddb60adbd09ce"
 
 filesafe-js@1.0.4:
   version "1.0.4"
